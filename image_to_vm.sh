@@ -42,6 +42,8 @@ DEFINE_string to "" \
   "Destination folder for VM output file(s)"
 DEFINE_string oem_pkg "" \
   "OEM package to install"
+DEFINE_string csphere_url "" \
+  "Csphere package url to download (only required on format=csphere)"
 
 # include upload options
 . "${BUILD_LIBRARY_DIR}/release_util.sh" || exit 1

@@ -410,11 +410,27 @@ install_oem_package() {
         return 0
     fi
 
+    if [ "${VM_IMG_TYPE}" == "csphere" ]; then
+	if [ -z "${FLAGS_csphere_url}" ]; then
+		die "required --csphere_url flag on format=csphere"
+	fi
+	download_csphere "${FLAGS_csphere_url}"
+    fi
+
     info "Installing ${oem_pkg} to OEM partition"
     USE="${oem_use}" emerge-${BOARD} --root="${oem_tmp}" \
         --root-deps=rdeps --usepkg --quiet "${oem_pkg}"
     sudo rsync -a "${oem_tmp}/usr/share/oem/" "${VM_TMP_ROOT}/usr/share/oem/"
     sudo rm -rf "${oem_tmp}"
+}
+
+# Download csphere latest images
+download_csphere() {
+    local url=$1
+    local save="${SCRIPT_ROOT}/../third_party/coreos-overlay/coreos-base/oem-csphere/files/csphere-latest.tgz"
+    info "Downloading csphere latest images: ${url}" 
+    curl -Ss ${ur} > ${save} || die
+    info "Download finished! save as ${save}" 
 }
 
 # Any other tweaks required?
