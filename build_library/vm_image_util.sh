@@ -429,7 +429,7 @@ download_csphere() {
     local url=$1
     local save="${SCRIPT_ROOT}/../third_party/coreos-overlay/coreos-base/oem-csphere/files/csphere-latest.tgz"
     info "Downloading csphere latest images: ${url}" 
-    curl -Ss ${ur} > ${save} || die
+    curl -Ss ${url} > ${save} || die
     info "Download finished! save as ${save}" 
 }
 
