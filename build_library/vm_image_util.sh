@@ -36,6 +36,7 @@ VALID_IMG_TYPES=(
     secure_demo
     niftycloud
     cloudsigma
+    csphere
 )
 
 #list of oem package names, minus the oem- prefix
@@ -55,6 +56,7 @@ VALID_OEM_PACKAGES=(
     vmware
     niftycloud
     cloudsigma
+    csphere
 )
 
 # Set at runtime to one of the above types
@@ -252,6 +254,12 @@ IMG_niftycloud_OEM_PACKAGE=oem-niftycloud
 ## cloudsigma
 IMG_cloudsigma_DISK_FORMAT=qcow2
 IMG_cloudsigma_OEM_PACKAGE=oem-cloudsigma
+
+## csphere
+IMG_csphere_DISK_FORMAT=iso
+IMG_csphere_PARTITIONED_IMG=0
+IMG_csphere_CONF_FORMAT=iso
+IMG_csphere_OEM_PACKAGE=oem-csphere
 
 ###########################################################
 
