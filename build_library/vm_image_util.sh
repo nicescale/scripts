@@ -36,7 +36,6 @@ VALID_IMG_TYPES=(
     secure_demo
     niftycloud
     cloudsigma
-    csphere
 )
 
 #list of oem package names, minus the oem- prefix
@@ -56,7 +55,6 @@ VALID_OEM_PACKAGES=(
     vmware
     niftycloud
     cloudsigma
-    csphere
 )
 
 # Set at runtime to one of the above types
@@ -255,12 +253,6 @@ IMG_niftycloud_OEM_PACKAGE=oem-niftycloud
 IMG_cloudsigma_DISK_FORMAT=qcow2
 IMG_cloudsigma_OEM_PACKAGE=oem-cloudsigma
 
-## csphere
-IMG_csphere_DISK_FORMAT=iso
-IMG_csphere_PARTITIONED_IMG=0
-IMG_csphere_CONF_FORMAT=iso
-IMG_csphere_OEM_PACKAGE=oem-csphere
-
 ###########################################################
 
 # Validate and set the vm type to use for the rest of the functions
@@ -410,27 +402,11 @@ install_oem_package() {
         return 0
     fi
 
-    if [ "${VM_IMG_TYPE}" == "csphere" ]; then
-	if [ -z "${FLAGS_csphere_url}" ]; then
-		die "required --csphere_url flag on format=csphere"
-	fi
-	download_csphere "${FLAGS_csphere_url}"
-    fi
-
     info "Installing ${oem_pkg} to OEM partition"
     USE="${oem_use}" emerge-${BOARD} --root="${oem_tmp}" \
         --root-deps=rdeps --usepkg --quiet "${oem_pkg}"
     sudo rsync -a "${oem_tmp}/usr/share/oem/" "${VM_TMP_ROOT}/usr/share/oem/"
     sudo rm -rf "${oem_tmp}"
-}
-
-# Download csphere latest images
-download_csphere() {
-    local url=$1
-    local save="${SCRIPT_ROOT}/../third_party/coreos-overlay/coreos-base/oem-csphere/files/csphere-latest.tgz"
-    info "Downloading csphere latest images: ${url}" 
-    curl -Ss ${url} > ${save} || die
-    info "Download finished! save as ${save}" 
 }
 
 # Any other tweaks required?

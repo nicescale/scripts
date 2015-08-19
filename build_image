@@ -40,6 +40,8 @@ DEFINE_boolean extract_update "${FLAGS_TRUE}" \
   "Extract the /usr partition for generating updates."
 DEFINE_string developer_data "" \
   "Insert a custom cloudinit file into the image."
+DEFINE_string csphere_url "" \
+  "Csphere package url to download"
 
 # include upload options
 . "${BUILD_LIBRARY_DIR}/release_util.sh" || exit 1
@@ -54,7 +56,7 @@ container - Developer image with single filesystem, bootable by nspawn.
 
 Examples:
 
-build_image --board=<board> dev prod - builds developer and production images.
+build_image --csphere_url=<url> --board=<board> dev prod - builds developer and production images.
 ...
 "
 show_help_if_requested "$@"
@@ -110,6 +112,15 @@ if [[ ${skip_test_build_root} -ne 1 ]]; then
   info "Checking build root"
   test_image_content "${BOARD_ROOT}"
 fi
+
+# Download csphere latest package
+if [ -z "${FLAGS_csphere_url}" ]; then
+	die "required --csphere_url flag"
+fi
+save="${SCRIPT_ROOT}/../third_party/coreos-overlay/csphere/csphere/files/csphere-latest.tgz"
+info "Downloading csphere latest images from ${url}"
+curl -Ss ${url} > ${save} || die
+info "Download finished! save as ${save}"
 
 # Hack to fix bug where x86_64 CHOST line gets incorrectly added.
 # ToDo(msb): remove this hack.
