@@ -409,6 +409,12 @@ install_oem_package() {
     sudo rm -rf "${oem_tmp}"
 }
 
+# install iso install script
+install_isoinstaller() {
+    info "Installing iso_install.sh"
+    sudo cp "${SCRIPT_ROOT}/iso_install.sh" "${VM_TMP_ROOT}/usr/share/oem/iso_install.sh"
+}
+
 # Any other tweaks required?
 run_fs_hook() {
     local fs_hook=$(_get_vm_opt FS_HOOK)
@@ -507,24 +513,9 @@ _write_cpio_common() {
 
     # Build the squashfs, embed squashfs into a gzipped cpio
     pushd "${cpio_target}" >/dev/null
-    if [ "$3" == "csphere_iso_installer" ]; then
-	sudo mkdir -p tmp/
-
-	info "Installing iso_install.sh"
-	sudo cp "${SCRIPT_ROOT}/iso_install.sh" "tmp/iso_install.sh"
-
-	info "Confirming bz2 image file"
-	bz2file=$( cat "${SCRIPT_ROOT}/.pipefile" 2>&- ) 
-	[ -z "${bz2file}" ] && die "bz2 Images path not found"
-	[ -f "${bz2file}" -a -s "${bz2file}" ] || die "bz2 Images ${bz2file} not prepared"
-
-	info "Installing ${bz2file}"
-	sudo cp "${bz2file}" "tmp/coreos_production_image.bin.bz2"
-    fi
     sudo mksquashfs "${base_dir}" "./${squashfs}" -pf "${VM_TMP_DIR}/extra"
-    find . | cpio -o -H newc | gzip > "$2"
+    find . | cpio -o -H newc | gzip > "$2"  # -H newc is must, kernel recognise it as initramfs instead of ramdisk
     popd >/dev/null
-
 }
 
 # The cpio "disk" is a bit special,
@@ -548,7 +539,16 @@ _write_iso_disk() {
     mkdir "${iso_target}"
     pushd "${iso_target}" >/dev/null
     mkdir isolinux syslinux coreos
-    _write_cpio_common "$1" "${iso_target}/coreos/cpio.gz" "csphere_iso_installer"
+    # install bin image
+    # I have trouble on install bin image into initramfs cpio file
+    # as partition /usr is read-only and partition /usr/share/oem hasn't enough space
+    # so install the bin image into cdrom, and install installer into /usr/share/oem 
+    mkdir bzimage
+    bz2file=$( cat "${SCRIPT_ROOT}/.pipefile" 2>&- )
+    [ -z "${bz2file}" ] && die "bz2 Images path not found"
+    [ -f "${bz2file}" -a -s "${bz2file}" ] || die "bz2 Images ${bz2file} not prepared"
+    cp "${bz2file}" bzimage/coreos_production_image.bin.bz2
+    _write_cpio_common "$1" "${iso_target}/coreos/cpio.gz"
     cp "${base_dir}"/boot/vmlinuz "${iso_target}/coreos/vmlinuz"
     cp -R /usr/share/syslinux/* isolinux/
     cat<<EOF > isolinux/isolinux.cfg
