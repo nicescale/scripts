@@ -192,12 +192,12 @@ if [[ "${PROD_IMAGE}" -eq 1 ]]; then
 fi
 
 # compress image.bin as bz2
-info "Compressing ${COREOS_PRODUCTION_IMAGE_NAME}"
-lbzip2 --compress --keep -f "${COREOS_PRODUCTION_IMAGE_NAME}"
-bzImage="${COREOS_PRODUCTION_IMAGE_NAME}.bz2"
+info "Compressing ${BUILD_DIR}/${COREOS_PRODUCTION_IMAGE_NAME}"
+lbzip2 --compress --keep -f "${BUILD_DIR}/${COREOS_PRODUCTION_IMAGE_NAME}"
+bzImage="${BUILD_DIR}/${COREOS_PRODUCTION_IMAGE_NAME}.bz2"
 [ -f "${bzImage}" -a -s "${bzImage}" ] || die "${bzImage} not prepared!"
 info "${bzImage} created!"
-echo "$(/bin/pwd)/${bzImage}" > "${SCRIPT_ROOT}/.pipefile"
+echo "${bzImage}" > "${SCRIPT_ROOT}/.pipefile"
 
 if [[ ${FLAGS_generate_update} -eq ${FLAGS_TRUE} ]] || \
    [[ ${FLAGS_extract_update} -eq ${FLAGS_TRUE} ]]
