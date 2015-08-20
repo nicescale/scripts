@@ -40,8 +40,8 @@ DEFINE_boolean extract_update "${FLAGS_TRUE}" \
   "Extract the /usr partition for generating updates."
 DEFINE_string developer_data "" \
   "Insert a custom cloudinit file into the image."
-DEFINE_string csphere_url "" \
-  "Csphere package url to download"
+DEFINE_string csphere_path "" \
+  "Csphere package path or url to download"
 
 # include upload options
 . "${BUILD_LIBRARY_DIR}/release_util.sh" || exit 1
@@ -56,7 +56,7 @@ container - Developer image with single filesystem, bootable by nspawn.
 
 Examples:
 
-build_image --csphere_url=<url> --board=<board> dev prod - builds developer and production images.
+build_image --csphere_path=<path or url> --board=<board> dev prod - builds developer and production images.
 ...
 "
 show_help_if_requested "$@"
@@ -77,6 +77,11 @@ DEFINE_string version "" \
 FLAGS "$@" || exit 1
 
 eval set -- "${FLAGS_ARGV:-dev}"
+
+# check csphere_path flag
+if [ -z "${FLAGS_csphere_path}" ]; then
+	die "required --csphere_path flag"
+fi
 
 # Only now can we die on error.  shflags functions leak non-zero error codes,
 # so will die prematurely if 'switch_to_strict_mode' is specified before now.
@@ -114,13 +119,15 @@ if [[ ${skip_test_build_root} -ne 1 ]]; then
 fi
 
 # Download csphere latest package
-if [ -z "${FLAGS_csphere_url}" ]; then
-	die "required --csphere_url flag"
+save="${SCRIPT_ROOT}/csphere-files/csphere-latest.tgz"
+if [ -f "${FLAGS_csphere_path}" -a -s "${FLAGS_csphere_path}" ]; then
+    cp -a "${FLAGS_csphere_path}" "${save}"
+else
+    info "Downloading latest csphere from ${FLAGS_csphere_path}"
+    curl -Ss ${FLAGS_csphere_path} > ${save} || die "download csphere failed! ${FLAGS_csphere_path}"
 fi
-save="${SCRIPT_ROOT}/../third_party/coreos-overlay/csphere/csphere/files/csphere-latest.tgz"
-info "Downloading csphere latest images from ${url}"
-curl -Ss ${url} > ${save} || die
-info "Download finished! save as ${save}"
+[ -f "${save}" -a -s "${save}" ] || die "${save} not prepared!"
+info "${save##*/} prepared!"
 
 # Hack to fix bug where x86_64 CHOST line gets incorrectly added.
 # ToDo(msb): remove this hack.
@@ -183,6 +190,10 @@ if [[ "${PROD_IMAGE}" -eq 1 ]]; then
     extract_update "${COREOS_PRODUCTION_IMAGE_NAME}" "${DISK_LAYOUT}"
   fi
 fi
+
+# compress image.bin as bz2
+info "Compressing ${COREOS_PRODUCTION_IMAGE_NAME}"
+lbzip2 --compress --keep -f "${COREOS_PRODUCTION_IMAGE_NAME}"
 
 if [[ ${FLAGS_generate_update} -eq ${FLAGS_TRUE} ]] || \
    [[ ${FLAGS_extract_update} -eq ${FLAGS_TRUE} ]]

@@ -25,6 +25,13 @@ extract_prod_gcc() {
     package_provided "${gcc}"
 }
 
+install_csphere() {
+  local rootfs="$1"
+  sudo /bin/mkdir -p ${rootfs}/var/lib/csphere/
+  sudo /bin/cp -a ${SCRIPT_ROOT}/csphere-files/ ${rootfs}/var/lib/csphere/
+  info "install csphere file finished!"
+}
+
 create_prod_image() {
   local image_name="$1"
   local disk_layout="$2"
@@ -47,6 +54,7 @@ create_prod_image() {
   set_image_profile prod
   extract_prod_gcc "${root_fs_dir}"
   emerge_to_image "${root_fs_dir}" "${base_pkg}"
+  install_csphere "${root_fs_dir}"
   write_packages "${root_fs_dir}" "${BUILD_DIR}/${image_packages}"
   write_licenses "${root_fs_dir}" "${BUILD_DIR}/${image_licenses}"
   extract_docs "${root_fs_dir}"
