@@ -507,8 +507,8 @@ _write_cpio_common() {
 
     # Build the squashfs, embed squashfs into a gzipped cpio
     pushd "${cpio_target}" >/dev/null
-    sudo mksquashfs "${base_dir}" "./${squashfs}" -pf "${VM_TMP_DIR}/extra"
     if [ "$3" == "csphere_iso_installer" ]; then
+	sudo mkdir -p tmp/
 
 	info "Installing iso_install.sh"
 	sudo cp "${SCRIPT_ROOT}/iso_install.sh" "tmp/iso_install.sh"
@@ -521,6 +521,7 @@ _write_cpio_common() {
 	info "Installing ${bz2file}"
 	sudo cp "${bz2file}" "tmp/coreos_production_image.bin.bz2"
     fi
+    sudo mksquashfs "${base_dir}" "./${squashfs}" -pf "${VM_TMP_DIR}/extra"
     find . | cpio -o -H newc | gzip > "$2"
     popd >/dev/null
 
