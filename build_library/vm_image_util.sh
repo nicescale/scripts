@@ -508,6 +508,19 @@ _write_cpio_common() {
     # Build the squashfs, embed squashfs into a gzipped cpio
     pushd "${cpio_target}" >/dev/null
     sudo mksquashfs "${base_dir}" "./${squashfs}" -pf "${VM_TMP_DIR}/extra"
+    if [ "$3" == "csphere_iso_installer" ]; then
+
+	info "Installing iso_install.sh"
+	sudo cp "${SCRIPT_ROOT}/iso_install.sh" "tmp/iso_install.sh"
+
+	info "Confirming bz2 image file"
+	bz2file=$( cat "${SCRIPT_ROOT}/.pipefile" 2>&- ) 
+	[ -z "${bz2file}" ] && die "bz2 Images path not found"
+	[ -f "${bz2file}" -a -s "${bz2file}" ] || die "bz2 Images ${bz2file} not prepared"
+
+	info "Installing ${bz2file}"
+	sudo cp "${bz2file}" "tmp/coreos_production_image.bin.bz2"
+    fi
     find . | cpio -o -H newc | gzip > "$2"
     popd >/dev/null
 
@@ -534,7 +547,7 @@ _write_iso_disk() {
     mkdir "${iso_target}"
     pushd "${iso_target}" >/dev/null
     mkdir isolinux syslinux coreos
-    _write_cpio_common "$1" "${iso_target}/coreos/cpio.gz"
+    _write_cpio_common "$1" "${iso_target}/coreos/cpio.gz" "csphere_iso_installer"
     cp "${base_dir}"/boot/vmlinuz "${iso_target}/coreos/vmlinuz"
     cp -R /usr/share/syslinux/* isolinux/
     cat<<EOF > isolinux/isolinux.cfg
