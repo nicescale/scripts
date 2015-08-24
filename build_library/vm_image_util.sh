@@ -413,6 +413,10 @@ install_oem_package() {
 install_isoinstaller() {
     info "Installing iso_install.sh"
     sudo cp "${SCRIPT_ROOT}/iso_install.sh" "${VM_TMP_ROOT}/usr/share/oem/iso_install.sh"
+    info "Installing dialog"
+    sudo mkdir "${VM_TMP_ROOT}"/usr/share/oem/{bin,lib64}
+    sudo cp "${SCRIPT_ROOT}"/dialog/dialog "${VM_TMP_ROOT}"/usr/share/oem/bin/dialog
+    sudo cp "${SCRIPT_ROOT}"/dialog/lib64/* "${VM_TMP_ROOT}"/usr/share/oem/lib64/
 }
 
 # Any other tweaks required?

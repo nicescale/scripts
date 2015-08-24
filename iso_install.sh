@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e 
 
+/usr/share/oem/bin/dialog
+exit 0
+
 show_usage(){
 cat <<EOF
 
