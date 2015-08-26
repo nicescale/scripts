@@ -566,7 +566,7 @@ timeout 15
 label coreos
   menu default
   kernel /coreos/vmlinuz
-  append initrd=/coreos/cpio.gz coreos.autologin
+  append initrd=/coreos/cpio.gz coreos.autologin init=/usr/lib/systemd/systemd
 EOF
     mkisofs -v -l -r -J -o $2 -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table .
     isohybrid $2
