@@ -4,6 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+SCRIPT_ROOT=$(dirname $(readlink -f "$0"))
 . "$(dirname "$0")/common.sh" || exit 1
 
 # Script must run inside the chroot
@@ -22,6 +23,12 @@ DEFINE_boolean noworkon "${FLAGS_FALSE}" \
   "Don't force-build workon packages."
 DEFINE_boolean fetchonly "${FLAGS_FALSE}" \
   "Don't build anything, instead only fetch what is needed."
+DEFINE_boolean csphere "${FLAGS_FALSE}" \
+  "Csphere product build mode."
+DEFINE_string csphere_assets_path "" \
+  "Csphere latest assets.tgz path or url"
+DEFINE_string csphere_mongod_path "" \
+  "Csphere 3.0.3 mongod path or url"
 
 # include upload options
 . "${BUILD_LIBRARY_DIR}/release_util.sh" || exit 1
@@ -35,6 +42,10 @@ up by the build_image script to put together a bootable CoreOS image.
 
 If [packages] are specified, only build those specific packages (and any
 dependencies they might need).
+
+Csphere product build mode:
+  --csphere  --csphere_assets_path=<...>  --csphere_mongod_path=<...>
+
 "
 show_help_if_requested "$@"
 
@@ -74,6 +85,29 @@ switch_to_strict_mode
 if [[ -z "${FLAGS_board}" ]]; then
   echo "Error: --board is required."
   exit 1
+fi
+
+prepare_csphere_file() {
+	local path=$1 save=$2
+	if [ -f "${path}" -a -s "${path}" ]; then
+		cp -a "${path}" "${save}"
+	else
+		info "Downloading ${path##*/} from ${path}"
+		curl -Ss ${path} > ${save} || die "download ${path##*/} failed!"
+	fi
+	[ -f "${save}" -a -s "${save}" ] || die "${save} not prepared!"
+	info "${save##*/} prepared!"
+}
+
+if [[ "${FLAGS_csphere}" -eq "${FLAGS_TRUE}" ]]; then
+	[ -z "${FLAGS_csphere_assets_path}" ] && \
+		die "require csphere_assets_path flag on csphere build mode"
+	[ -z "${FLAGS_csphere_mongod_path}" ] && \
+		die "require csphere_mongod_path flag on csphere build mode"
+	save="${SCRIPT_ROOT}/../third_party/coreos-overlay/csphere/csphere/files/assets-latest.tgz"
+	prepare_csphere_file "${FLAGS_csphere_assets_path}" "${save}"
+	save="${SCRIPT_ROOT}/../third_party/coreos-overlay/csphere/csphere/files/mongod"
+	prepare_csphere_file "${FLAGS_csphere_mongod_path}" "${save}"
 fi
 
 check_gsutil_opts
@@ -233,9 +267,6 @@ break_dep_loop sys-apps/systemd cryptsetup
 
 info "Merging go-bindata"
 sudo -E "${EMERGE_CMD[@]}" "${EMERGE_FLAGS[@]}" csphere/go-bindata
-
-info "Merging mongo"
-sudo -E "${EMERGE_CMD[@]}" "${EMERGE_FLAGS[@]}" csphere/mongo
 
 info "Merging prometheus"
 sudo -E "${EMERGE_CMD[@]}" "${EMERGE_FLAGS[@]}" csphere/prometheus
