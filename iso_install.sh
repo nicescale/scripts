@@ -12,6 +12,14 @@ get_inetdev(){
 	awk -F: '/:/ {if(/lo/){next}else{print $1}}' /proc/net/dev 2>&-
 }
 
+progress(){
+	trap 'echo -e "XXXX\n$2\n\n\n$4\nXXXX\n";return;' 10
+        for((n=$1;n<=$2;n++));do
+                echo -e "XXXX\n$n\n\n\n$4\nXXXX"
+                sleep $3
+        done
+}
+
 exit_confirm() {
 	local rc=0
 	while [ ${rc} == "0" ]; do
@@ -26,6 +34,14 @@ exit_confirm() {
 
 # trap ctrl C
 trap 'exit_confirm' 2 15
+
+
+# run as root
+if [ "$(id -u)" != "0" ]; then
+	${DIALOG} --title "Note" \
+		--msgbox "Require Root Privilege" 5 26
+	exit 1
+fi
 
 # welcome
 ${DIALOG} --title "Welcome" \
@@ -119,9 +135,19 @@ ${DIALOG} --title "Last Confirm" \
 [ $? -ne 0 ] && exit 
 
 # install begin, display progress bar
-mount -o loop /dev/cdrom /mnt
-bunzip2 -c  /mnt/bzimage/coreos_production_image.bin.bz2 > "${device}"
-blockdev --rereadpt "${device}" 2>&1 1>&-
+(
+	progress 0 10 0.1 "mount cdrom ..." &
+	mount -o loop /dev/cdrom /mnt
+	kill -10 $! >/dev/null 2>&1
+
+	progress 11 90 0.2 "writing disk ..." &
+	bunzip2 -c  /mnt/bzimage/coreos_production_image.bin.bz2 > "${device}"
+	kill -10 $! >/dev/null 2>&1
+	
+	progress 91 100 0.1 "updating partition table ..." &
+	blockdev --rereadpt "${device}" 2>&1 1>&-
+	kill -10 $! >/dev/null 2>&1
+) | ${DIALOG} --gauge "Please Wait ..." 12 70 0
 
 # finished
 ${DIALOG} --title "Finished" \
