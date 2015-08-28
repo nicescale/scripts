@@ -106,7 +106,7 @@ if [[ "${FLAGS_csphere}" -eq "${FLAGS_TRUE}" ]]; then
 		die "require csphere_mongod_path flag on csphere build mode"
 	save="${SCRIPT_ROOT}/../third_party/coreos-overlay/csphere/csphere/files/assets-latest.tgz"
 	prepare_csphere_file "${FLAGS_csphere_assets_path}" "${save}"
-	save="${SCRIPT_ROOT}/../third_party/coreos-overlay/csphere/csphere/files/mongod"
+	save="${SCRIPT_ROOT}/../third_party/coreos-overlay/csphere/csphere/files/csphere-mongo.tgz"
 	prepare_csphere_file "${FLAGS_csphere_mongod_path}" "${save}"
 fi
 
