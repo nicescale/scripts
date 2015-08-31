@@ -7,6 +7,26 @@ MOUNTON="/mnt"
 BLOCKDEV=()
 INETDEV=()
 
+HostName=$(mktemp -u XXXXXXXX)
+DefaultUser="core"
+Password=
+Role=
+Controller=
+AuthKey=
+
+gen_cloudconfig() {
+cat << EOF
+#cloud-config
+hostname: ${HostName}
+users:
+  - name: ${DefaultUser}
+    passwd: ${Password}
+    groups:
+      - sudo
+      - docker
+EOF
+}
+
 get_blockdev() {
 	local hwdisk=()
 	eval "hwdisk=( 
@@ -50,8 +70,8 @@ get_inetdev(){
 # get_inetdev; echo ${INETDEV[*]}; exit 0
 
 clean_mount() {
-	if mountpoint  -q ${MOUNTON} >/dev/null 2>&1; then
-		umount ${MOUNTON}
+	if mountpoint  -q ${1} >/dev/null 2>&1; then
+		umount ${1}
 	fi
 }
 
@@ -68,7 +88,7 @@ exit_confirm() {
 	while [ ${rc} == "0" ]; do
 		${DIALOG} --title "Exit Confirm" --yesno "Are you sure to exit ?" 5 26
 		if [ $? == "0" ]; then 	# Yes
-			clean_mount
+			clean_mount ${MOUNTON}
 			exit 0
 		else			# No / ctrl C 
 			rc=1
@@ -115,23 +135,20 @@ while [ -z "${device}" ]; do
 done
 
 # select csphere role
-role=
-while [ -z "${role}" ]; do
+while [ -z "${Role}" ]; do
 	exec 3>&1
-	role=$( ${DIALOG} --title "Select Role" \
+	Role=$( ${DIALOG} --title "Select Role" \
 			--radiolist "Role:" 10 60 0 \
-			1 Csphere-Controller 	r1  \
-			2 Csphere-Agent 	r2 \
+			"controller" "Csphere Controller" 	r1 \
+			"agent"      "Csphere Agent" 		r2 \
 			2>&1 1>&3
 		)
 	exec 3>&-
 done
 
 # if agent, setup controller-url / authkey
-if [ "${role}" == "2" ]; then
+if [ "${Role}" == "agent" ]; then
 	agentform=
-	controller=
-	authkey=
 	while :; do
 		exec 3>&1
 		agentform=$( ${DIALOG} --title "Agent Settings" \
@@ -143,13 +160,31 @@ if [ "${role}" == "2" ]; then
 		exec 3>&-
 		[ -z "${agentform}" ] && continue
 		agentform=( ${agentform} )
-		controller="${agentform[0]}"; [ -z "${controller}" ] && continue
-		authkey="${agentform[1]}"; [ -z "${authkey}" ] && continue
+		Controller="${agentform[0]}"; [ -z "${Controller}" ] && continue
+		AuthKey="${agentform[1]}"; [ -z "${AuthKey}" ] && continue
 		break
 	done
-	echo -e "${agentform[*]}"
 fi
 
+# system setup
+syssetup=
+while :; do
+	exec 3>&1
+	syssetup=$( ${DIALOG} --title "System Settings" \
+			--form "Parameter:" 10 60 0 \
+			"HostName:"      1 1 "${HostName}"     1 12 32 0 \
+			"UserName:"      2 1 "${DefaultUser}"  2 12 -32 -32 \
+			"Password:"      3 1 ""                3 12 32 0 \
+			2>&1 1>&3
+		)
+	exec 3>&-
+	[ -z "${syssetup}" ] && continue
+	syssetup=( ${syssetup} )
+	HostName="${syssetup[0]}"; [ -z "${HostName}" ] && continue
+	Password="${syssetup[1]}"; [ -z "${Password}" ] && continue
+	Password="$( openssl  passwd -1  "${Password}" 2>/dev/null)"
+	break
+done
 
 # setup inet
 get_inetdev
@@ -187,23 +222,37 @@ ${DIALOG} --title "Last Confirm" \
 [ $? -ne 0 ] && exit 
 
 # install begin, display progress bar
+clean_mount ${MOUNTON}
 (
 	progress 0 10 0.1 "mount cdrom ..." &
 	mount -o loop /dev/cdrom ${MOUNTON}
 	sleep 1
 	kill -10 $! >/dev/null 2>&1
 
-	progress 11 99 0.4 "writing disk ..." &
+	progress 11 95 0.4 "writing disk ..." &
 	bunzip2 -c  ${MOUNTON}/bzimage/coreos_production_image.bin.bz2 > "${device}"
+	sleep 1
 	kill -10 $! >/dev/null 2>&1
 	
-	progress 99 100 0.1 "updating partition table ..." &
+	progress 96 100 0.1 "updating partition table ..." &
 	blockdev --rereadpt "${device}" 2>&1
 	sleep 1
 	kill -10 $! >/dev/null 2>&1
 ) | ${DIALOG} --gauge "Please Wait ..." 12 70 0
 
+# creating cloud config 
+${DIALOG} --title "Almost Done" \
+	--infobox "Creating Cloud Config ... " 3 29
+mkdir -p /mnt1
+mount -t ext4 ${device}9 /mnt1
+mkdir -p /mnt1/var/lib/coreos-install
+gen_cloudconfig > "${TMPFILE}"
+cp "${TMPFILE}" /mnt1/var/lib/coreos-install/user_data
+clean_mount /mnt1
+sleep 1
+
 # finished
 ${DIALOG} --title "Finished" \
-	--msgbox "Installation Finished! Reboot Now ... " 5 41
+	--msgbox "Installation Finished! Reboot Now ? " 5 39
+
 reboot
