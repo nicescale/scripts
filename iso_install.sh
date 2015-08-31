@@ -212,6 +212,7 @@ setup_inet() {
 	local inetdev=
 	local savedcfgs=()
 	local ok_label= ccl_label=
+	local rc=
 	while :; do 
 		if [ "${#savedcfgs[*]}" -gt 0 ]; then
 			ok_label="Save and Quit"
@@ -226,12 +227,24 @@ setup_inet() {
 				--radiolist "Interface:" 20 70 20 ${inetdevargs[*]} \
 				2>&1 1>&3
 			)
+		rc=$?
 		exec 3>&-
-		## TODO
-		if [ -z "${inetdev}" ]; then
-			${DIALOG} --title "Confirm" \
-				--yesno "Skip Network Interface Setup ?" \
-				5 34
+		if [ $rc -eq 0 ]; then   # ok
+			if [ "${#savedcfgs[*]}" -gt 0 ]; then ## save and quit
+				break
+			else				    ## select and setup
+				[ -z "${inetdev}" ] && continue
+			fi
+		elif [ $rc -eq 1 ]; then # cancel
+			if [ "${#savedcfgs[*]}" -gt 0 ]; then ## Discard
+				${DIALOG} --title "Confirm" \
+					--yesno "Discard Network Interface Setup ?" \
+					5 38
+			else				    ## Skip
+				${DIALOG} --title "Confirm" \
+					--yesno "Skip Network Interface Setup ?" \
+					5 34
+			fi
 			[ $? -eq 0 ] && break || continue
 		fi
 
@@ -246,10 +259,12 @@ setup_inet() {
 					"DnsMaster:"     3 1 ""  3 12 32 0 \
 					2>&1 1>&3
 				)
+			rc=$?
 			exec 3>&-
-			[ $? -eq 1 ] && break
+			[ $rc -eq 1 ] && cfg= && break
 			arr=( ${cfg} )
-			[ ${#arr[*]} -ne 3 ] && continue
+			## Todo: valid check
+			[ ${#arr[*]} -ne 3 ] && cfg= && continue 1
 		done
 
 		# accumulated savecfgs
