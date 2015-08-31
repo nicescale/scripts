@@ -3,17 +3,60 @@
 BACKTITLE="Installation"
 DIALOG="/usr/share/oem/bin/dialog --backtitle ${BACKTITLE} "
 TMPFILE="$(mktemp)"
+MOUNTON="/mnt"
+BLOCKDEV=()
+INETDEV=()
 
 get_blockdev() {
-	find /dev -type b -a -writable -a ! -name "loop*"  -a ! -name "sr*" 2>&-
+	local hwdisk=()
+	eval "hwdisk=( 
+		$( lshw -short -class disk |\
+			awk '($1~/^\//){$1=$3=""; \
+				gsub("^[ \t]*","",$0); \
+				gsub("[ \t]*$","",$0); \
+				print}' | \
+			awk '{print "\""$1"\""; \
+				$1=""; \
+				gsub("[ \t]", "_", $0);\
+				print "\""$0"\""}' 
+		)
+	)
+	"
+	for((i=0;i<=${#hwdisk[*]}-1;i+=2)) do
+		[ -b ${hwdisk[$i]} -a -w ${hwdisk[$i]} ] || continue
+		[[ ${hwdisk[$i]} =~ "cdrom" ]] && continue
+		BLOCKDEV+=( ${hwdisk[$i]}  "${hwdisk[(($i+1))]}" )
+	done
 }
+# get_blockdev; echo "${BLOCKDEV[*]}"; exit 0
 
 get_inetdev(){
-	awk -F: '/:/ {if(/lo/){next}else{print $1}}' /proc/net/dev 2>&-
+	local hwnetwork=()
+	eval "hwnetwork=(
+		$( lshw -short -class network |\
+			awk '($1~/^\//){$1=$3=""; \
+				gsub("^[ \t]*","",$0); \
+				gsub("[ \t]*$","",$0); \
+				print}' | \
+			awk '{print "\""$1"\""; \
+				$1=""; \
+				gsub("[ \t]", "_", $0);\
+				print "\""$0"\""}'
+		)
+	)
+	"
+	INETDEV+=( ${hwnetwork[*]} )
+}
+# get_inetdev; echo ${INETDEV[*]}; exit 0
+
+clean_mount() {
+	if mountpoint  -q ${MOUNTON} >/dev/null 2>&1; then
+		umount ${MOUNTON}
+	fi
 }
 
 progress(){
-	trap 'echo -e "XXXX\n$2\n\n\n$4\nXXXX\n";return;' 10
+	trap 'echo -e "XXXX\n$2\n\n\n$4\nXXXX\n";exit;' 10
         for((n=$1;n<=$2;n++));do
                 echo -e "XXXX\n$n\n\n\n$4\nXXXX"
                 sleep $3
@@ -25,6 +68,7 @@ exit_confirm() {
 	while [ ${rc} == "0" ]; do
 		${DIALOG} --title "Exit Confirm" --yesno "Are you sure to exit ?" 5 26
 		if [ $? == "0" ]; then 	# Yes
+			clean_mount
 			exit 0
 		else			# No / ctrl C 
 			rc=1
@@ -48,41 +92,27 @@ ${DIALOG} --title "Welcome" \
 	--msgbox "Welcome to Installation Guid" 5 32
 
 # select block device
-blockdevargs=
-n=0
-for d in `get_blockdev`; do
-	((n++))
-	blockdevargs="${blockdevargs} ${n} ${d} d${n} "
+get_blockdev
+blockdevargs=()
+for((i=0;i<=${#BLOCKDEV[*]}-1;i+=2));do
+	if [ -n ${BLOCKDEV[$i]} -a -n "${BLOCKDEV[(($i+1))]}" ]; then
+		blockdevargs+=( ${BLOCKDEV[$i]} ${BLOCKDEV[(($i+1))]} ${i} )
+	fi
 done
-if [ -z "${blockdevargs// /}" ]; then
+if [ ${#blockdevargs[0]} -eq 0 ]; then
 	${DIALOG} --title "ERROR" \
 		--msgbox "ERROR: No Writable Block Device Found!" 5 42
 	exit 1
 fi
-blockdev=
-while [ -z "${blockdev}" ]; do 
+device=
+while [ -z "${device}" ]; do 
 	exec 3>&1
-	blockdev=$( ${DIALOG} --title "Select Disk" \
-			--radiolist "Devices:" 20 60 20 \
-			${blockdevargs} \
+	device=$( ${DIALOG} --title "Select Disk" \
+			--radiolist "Devices:" 20 60 20 ${blockdevargs[*]} \
 			2>&1 1>&3
 		)
 	exec 3>&-
 done
-blockdevargs=( ${blockdevargs} )
-device=
-for((i=0;i<=${#blockdevargs[*]}-1;i+=3));do
-	if [ ${blockdevargs[$i]}  -eq $blockdev ]; then
-		echo "$i got it"
-		device=${blockdevargs[(($i+1))]}
-		break
-	fi
-done
-if [ -z "${device}" ]; then
-	${DIALOG} --title "ERROR" \
-		--msgbox "ERROR: No Writable Block Device Found!" 5 42
-	exit 1
-fi
 
 # select csphere role
 role=
@@ -122,9 +152,31 @@ fi
 
 
 # setup inet
-#inetdevargs=
-#if [ -n "$(get_inetdev)" ]; then
-#fi
+get_inetdev
+inetdevargs=()
+for((i=0;i<=${#INETDEV[*]}-1;i+=2));do
+	if [ -n ${INETDEV[$i]} -a -n "${INETDEV[(($i+1))]}" ]; then
+		inetdevargs+=( ${INETDEV[$i]} ${INETDEV[(($i+1))]} ${i} )
+	fi
+done
+if [ ${#blockdevargs[0]} -eq 0 ]; then
+	${DIALOG} --title "ERROR" \
+		--msgbox "ERROR: No Writable Block Device Found!" 5 42
+	exit 1
+fi
+inetdevargs+=( "SKIP" "Skip_Inet_Setup" "skip" )
+inetdev=
+while [ -z "${inetdev}" ]; do 
+	exec 3>&1
+	inetdev=$( ${DIALOG} --title "Select Network Interface" \
+			--radiolist "Interface:" 20 70 20 ${inetdevargs[*]} \
+			2>&1 1>&3
+		)
+	exec 3>&-
+done
+if [ ${inetdev} != "SKIP" ]; then
+	echo "${inetdev}"
+fi
 
 
 # last confirm
@@ -137,15 +189,17 @@ ${DIALOG} --title "Last Confirm" \
 # install begin, display progress bar
 (
 	progress 0 10 0.1 "mount cdrom ..." &
-	mount -o loop /dev/cdrom /mnt
+	mount -o loop /dev/cdrom ${MOUNTON}
+	sleep 1
 	kill -10 $! >/dev/null 2>&1
 
-	progress 11 90 0.2 "writing disk ..." &
-	bunzip2 -c  /mnt/bzimage/coreos_production_image.bin.bz2 > "${device}"
+	progress 11 99 0.4 "writing disk ..." &
+	bunzip2 -c  ${MOUNTON}/bzimage/coreos_production_image.bin.bz2 > "${device}"
 	kill -10 $! >/dev/null 2>&1
 	
-	progress 91 100 0.1 "updating partition table ..." &
-	blockdev --rereadpt "${device}" 2>&1 1>&-
+	progress 99 100 0.1 "updating partition table ..." &
+	blockdev --rereadpt "${device}" 2>&1
+	sleep 1
 	kill -10 $! >/dev/null 2>&1
 ) | ${DIALOG} --gauge "Please Wait ..." 12 70 0
 
