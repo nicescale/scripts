@@ -48,7 +48,7 @@ coreos:
 EOF
 	fi
 	if [ "${Role}" == "controller" ]; then
-		tmp=$(cat "${CLOUDINIT}/csphere-{mongodb,prometheus,controller}.service" 2>&-)
+		tmp=$(cat "${CLOUDINIT}"/csphere-{mongodb,prometheus,controller}.service 2>&-)
 		tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
 		cat <<EOF
 ${tmp}
