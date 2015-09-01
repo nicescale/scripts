@@ -412,11 +412,13 @@ install_oem_package() {
 # install iso install script
 install_isoinstaller() {
     info "Installing iso_install.sh"
-    sudo cp "${SCRIPT_ROOT}/iso_install.sh" "${VM_TMP_ROOT}/usr/share/oem/iso_install.sh"
+    sudo cp -a "${SCRIPT_ROOT}/iso_install.sh" "${VM_TMP_ROOT}/usr/share/oem/iso_install.sh"
     info "Installing dialog"
     sudo mkdir "${VM_TMP_ROOT}"/usr/share/oem/bin
-    sudo cp "${SCRIPT_ROOT}"/dialog/dialog "${VM_TMP_ROOT}"/usr/share/oem/bin/dialog
-    sudo cp "${SCRIPT_ROOT}"/dialog/lib64/* "${VM_TMP_ROOT}"/usr/share/oem/lib64/
+    sudo cp -a "${SCRIPT_ROOT}"/dialog/dialog "${VM_TMP_ROOT}"/usr/share/oem/bin/dialog
+    sudo cp -a "${SCRIPT_ROOT}"/dialog/lib64/* "${VM_TMP_ROOT}"/usr/share/oem/lib64/
+    info "Installing csphere-cloudinit"
+    sudo cp -a "${SCRIPT_ROOT}"/csphere-cloudinit/ "${VM_TMP_ROOT}"/usr/share/oem/csphere-cloudinit
 }
 
 # Any other tweaks required?

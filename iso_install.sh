@@ -484,7 +484,7 @@ setup_role
 [ "${Role}" == "agent" ] &&  setup_agentcfg
 setup_system
 setup_inet
-# prog_inst
+prog_inst
 cloudinit
 bye
-# reboot
+reboot
