@@ -1,0 +1,19 @@
+- path: /etc/prometheus.yml
+  permissions: 0644
+  owner: root
+  content: |
+    global:
+      scrape_interval:     30s
+      evaluation_interval: 45s
+    rule_files:
+      - "/data/alarm-rules/*.rule"
+    scrape_configs:
+      - job_name: 'csphere-exporter'
+        basic_auth:
+          username: 'csphere'
+          password: 'helloworld'
+        scrape_interval: 30s
+        scrape_timeout: 10s
+        metrics_path: '/api/metrics'
+        target_groups:
+          - targets: ['127.0.0.1']

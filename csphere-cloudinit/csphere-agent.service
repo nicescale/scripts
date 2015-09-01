@@ -1,0 +1,14 @@
+- name: csphere-agent.service
+  command: start
+  enable: true
+  content: |
+    [Unit]
+    Description=csphere agent
+
+    [Service]
+    EnvironmentFile=/etc/csphere.env 
+    User=root
+    ExecStart=/bin/csphere --tls join
+
+    [Install]
+    WantedBy=multi-user.target

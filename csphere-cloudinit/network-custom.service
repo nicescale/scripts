@@ -1,0 +1,16 @@
+- name: network-custom.service
+  command: start
+  enable: true
+  content: |
+    [Unit]
+    Description=csphere network config
+    After=network-online.target
+    Wants=network-online.target
+
+    [Service]
+    User=root
+    Type=oneshot
+    ExecStart=/etc/br.sh
+
+    [Install]
+    WantedBy=multi-user.target
