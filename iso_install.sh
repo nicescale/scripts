@@ -60,8 +60,17 @@ inetcfg_error=(
 	1  "IPAddr Malformation"
 	2  "Gateway Malformation"
 	3  "Dns Malformation"
-	4  "Config Count Missing"
+	4  "Config Missing"
 )
+
+get_error() {
+	for((i=0;i<=${#inetcfg_error[*]}-1;i+=2)){
+		if [ "${inetcfg_error[$i]}" == "$1" ]; then
+			echo -e "${inetcfg_error[(($i+1))]}"
+			return
+		fi
+	}
+}
 
 # parse inet config
 parse_inetcfg() {
@@ -347,10 +356,14 @@ setup_inet() {
 			rc=$?
 			exec 3>&-
 			[ $rc -eq 1 ] && cfg= && break 1
-			# mmm=$(parse_inetcfg "${cfg}"); rrr=$?
-			# ${DIALOG} --title "Parse Result" --msgbox "mmm=${mmm} rrr=${rrr}"  40 100
-			if ! parse_inetcfg "${cfg}" >/dev/null 2>&1; then
+			parse_inetcfg "${cfg}" >/dev/null 2>&1
+			rc=$?
+			if [ $rc -ne 0 ]; then
 				cfg=
+				${DIALOG} --title "Check Invalid" \
+					--ok-label "Return"  \
+					--msgbox "$(get_error $rc)" \
+					5 24
 				continue 1
 			fi
 		done
