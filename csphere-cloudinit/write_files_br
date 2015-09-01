@@ -17,6 +17,6 @@
        ip addr  flush dev   $card
        ifconfig  br${card}  $ip  netmask $mask
     done
-    gw=$(route -n|awk '{ if ($1 == "0.0.0.0")  print $2}')
-    echo "got gateway: $gw"
-    route add default gw $gw 
+    #gw=$(route -n|awk '{ if ($1 == "0.0.0.0")  print $2}')
+    #echo "got gateway: $gw"
+    #route add default gw $gw 

@@ -1,4 +1,4 @@
-- name: mongodb.service
+- name: csphere-mongodb.service
   command: start
   enable: true
   content: |
@@ -8,9 +8,9 @@
     
     [Service]
     User=root
-    ExecStartPre=mkdir -p /data/db
-    ExecStartPre=mkdir -p /data/logs
-    ExecStart=/usr/bin/mongod --quiet --config /etc/mongodb.conf
+    ExecStartPre=/bin/mkdir -p /data/db
+    ExecStartPre=/bin/mkdir -p /data/logs
+    ExecStart=/bin/mongod --quiet --config /etc/mongodb.conf
 
     [Install]
     WantedBy=multi-user.target

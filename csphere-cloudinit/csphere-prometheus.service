@@ -1,4 +1,4 @@
-- name: prometheus.service
+- name: csphere-prometheus.service
   command: start
   enable: true
   content: |
