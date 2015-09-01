@@ -197,42 +197,54 @@ setup_device() {
 			--msgbox "ERROR: No Writable Block Device Found!" 5 42
 		exit 1
 	fi
+	local rc=
 	while [ -z "${DEVICE}" ]; do 
 		exec 3>&1
 		DEVICE=$( ${DIALOG} --title "Select Disk" \
+				--cancel-label "Exit" \
 				--radiolist "Devices:" 20 60 20 ${blockdevargs[*]} \
 				2>&1 1>&3
 			)
+		rc=$?
 		exec 3>&-
+		[ $rc -eq 1 ] && exit_confirm
 	done
 }
 
 # select csphere role
 setup_role() {
+	local rc=
 	while [ -z "${Role}" ]; do
 		exec 3>&1
 		Role=$( ${DIALOG} --title "Select Role" \
+			--cancel-label "Exit" \
 			--radiolist "Role:" 10 60 0 \
 			"controller" "Csphere Controller" 	r1 \
 			"agent"      "Csphere Agent" 		r2 \
 			2>&1 1>&3
 		)
+		rc=$?
 		exec 3>&-
+		[ $rc -eq 1 ] && exit_confirm
 	done
 }
 
 # if agent, setup controller-url / authkey
 setup_agentcfg() {
 	local agentform=
+	local rc=
 	while :; do
 		exec 3>&1
 		agentform=$( ${DIALOG} --title "Agent Settings" \
+				--cancel-label "Exit" \
 				--form "Parameter:" 10 60 0 \
 				"Controller:"    1 1 "" 1 12 32 0 \
 				"AuthKey   :"    2 1 "" 2 12 32 0 \
 				2>&1 1>&3		
 			)
+		rc=$?
 		exec 3>&-
+		[ $rc -eq 1 ] && exit_confirm
 		[ -z "${agentform}" ] && continue
 		agentform=( ${agentform} )
 		Controller="${agentform[0]}"; [ -z "${Controller}" ] && continue
@@ -243,17 +255,21 @@ setup_agentcfg() {
 
 # system setup
 setup_system() {
+	local rc=
 	local syssetup=
 	while :; do
 		exec 3>&1
 		syssetup=$( ${DIALOG} --title "System Settings" \
+			--cancel-label "Exit" \
 			--form "Parameter:" 10 60 0 \
 			"HostName:"      1 1 "${HostName}"     1 12 32 0 \
 			"UserName:"      2 1 "${DefaultUser}"  2 12 -32 -32 \
 			"Password:"      3 1 ""                3 12 32 0 \
 			2>&1 1>&3
 		)
+		rc=$?
 		exec 3>&-
+		[ $rc -eq 1 ] && exit_confirm
 		[ -z "${syssetup}" ] && continue
 		syssetup=( ${syssetup} )
 		HostName="${syssetup[0]}"; [ -z "${HostName}" ] && continue
@@ -387,6 +403,15 @@ cloudinit() {
 	mount -t ext4 ${DEVICE}9 /mnt1
 	mkdir -p /mnt1/var/lib/coreos-install
 	gen_cloudconfig > "${TMPFILE}"
+	if ! coreos-cloudinit -validate --from-file="${TMPFILE}" >/dev/null 2>&1;  then
+		${DIALOG} --title "ERROR" \
+			--msgbox "ERROR: Cloud Config Validation Error!" 5 41
+		exit 1
+	fi
+	${DIALOG} --title "Confirm Cloud Config" \
+		--ok-label "OK" \
+		--textbox "${TMPFILE}" \
+		20 70
 	cp "${TMPFILE}" /mnt1/var/lib/coreos-install/user_data
 	clean_mount /mnt1
 	sleep 1
