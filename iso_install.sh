@@ -3,6 +3,7 @@
 BACKTITLE="Installation"
 DIALOG="/usr/share/oem/bin/dialog --backtitle ${BACKTITLE} "
 TMPFILE="$(mktemp)"
+TMPINET="$(mktemp).inet"
 MOUNTON="/mnt"
 BLOCKDEV=()
 INETDEV=()
@@ -16,7 +17,7 @@ Controller=
 AuthKey=
 
 gen_cloudconfig() {
-cat << EOF
+	cat << EOF
 #cloud-config
 hostname: ${HostName}
 users:
@@ -26,6 +27,74 @@ users:
       - sudo
       - docker
 EOF
+	local coreos.units=0
+	if [ -f "${TMPINET}" -a -s "${TMPINET}" ]; then
+		local tmp=$(cat "${TMPINET}")
+		tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
+		cat <<EOF
+coreos:
+  units:
+${tmp}
+EOF
+		coreos.units=1
+	fi
+}
+
+gen_network_cloudconfig(){
+	local inet="$1" cfg="$2"
+	cat << EOF
+- name: ${inet}-static.network
+  content : |
+    [Match]
+    Name=${inet}
+
+EOF
+	local tmp=$( parse_inetcfg "${cfg}" ) 
+	tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
+	cat << EOF
+${tmp}
+EOF
+}
+
+inetcfg_error=(
+	1  "IPAddr Malformation"
+	2  "Gateway Malformation"
+	3  "Dns Malformation"
+	4  "Config Count Missing"
+)
+
+# parse inet config
+parse_inetcfg() {
+	local s="${1}"
+	local ln=$(echo -e "${s}" | awk 'END{print NR}')
+	[ $ln -ne 3 ] && return 4
+	local ipaddr= gateway= dns=
+	ipaddr=$(echo -e "${s}" | awk '{print;exit 0}')
+	gateway=$(echo -e "${s}" | awk '(NR==2){print;exit}')
+	dns=$(echo -e "${s}" | awk '(NR==3){print;exit}')
+	ipp1=$(echo -e "${ipaddr}" | awk -F"/" '{print $1}')
+	ipp2=$(echo -e "${ipaddr}" | awk -F"/" '{print $NF}')
+	if ! isipaddr "${ipp1}" || ! is_between "${ipp2}" 0 32; then
+		 return 1
+	fi
+	isipaddr "${gateway}"  || return 2
+	isipaddr "${dns}" || return 3
+	cat << EOF
+[Network]
+DHCP=no
+Address=${ipaddr} 
+Gateway=${gateway}
+DNS=${dns}
+EOF
+	return 0
+}
+
+isipaddr() {
+        echo "${1}" | grep -E -q "^(([0-9]|([1-9][0-9])|(1[0-9]{2})|(2([0-4][0-9]|5[0-5])))\.){3}([1-9]|([1-9][0-9])|(1[0-9]{2})|(2([0-4][0-9]|5[0-5])))$"
+}
+
+is_between() {
+        echo $1 $2 $3 | awk '{if($1>=$2 && $1<=$3){exit 0;} else{exit 1;}}' 2>&- 
 }
 
 get_blockdev() {
@@ -211,31 +280,29 @@ setup_inet() {
 
 	local inetdev=
 	local savedcfgs=()
-	local ok_label= ccl_label=
+	local ccl_label= extra_opts=
 	local rc=
 	while :; do 
 		if [ "${#savedcfgs[*]}" -gt 0 ]; then
-			ok_label="Save and Quit"
 			ccl_label="Discard"
+			extra_opts=" --extra-button --extra-label Save/Quit "
 		else
-			ok_label="Select and Setup"
 			ccl_label="Skip"
+			extra_opts=
 		fi
 		exec 3>&1
 		inetdev=$( ${DIALOG} --title "Select Network Interface" \
-				--ok-label "${ok_label}" --cancel-label "${ccl_label}" \
-				--radiolist "Interface:" 20 70 20 ${inetdevargs[*]} \
+				--ok-label "Select/Setup" --cancel-label "${ccl_label}" \
+				${extra_opts} \
+				--radiolist "Interface:" 20 70 20 \
+				${inetdevargs[*]} \
 				2>&1 1>&3
 			)
 		rc=$?
 		exec 3>&-
-		if [ $rc -eq 0 ]; then   # ok
-			if [ "${#savedcfgs[*]}" -gt 0 ]; then ## save and quit
-				break
-			else				    ## select and setup
-				[ -z "${inetdev}" ] && continue
-			fi
-		elif [ $rc -eq 1 ]; then # cancel
+		if [ $rc -eq 0 ]; then   # select and setup
+			[ -z "${inetdev}" ] && continue
+		elif [ $rc -eq 1 ]; then # cancel-label
 			if [ "${#savedcfgs[*]}" -gt 0 ]; then ## Discard
 				${DIALOG} --title "Confirm" \
 					--yesno "Discard Network Interface Setup ?" \
@@ -246,6 +313,8 @@ setup_inet() {
 					5 34
 			fi
 			[ $? -eq 0 ] && break || continue
+		elif [ $rc -eq 3 ]; then   ## save and quit
+			break
 		fi
 
 		cfg=
@@ -261,19 +330,25 @@ setup_inet() {
 				)
 			rc=$?
 			exec 3>&-
-			[ $rc -eq 1 ] && cfg= && break
-			arr=( ${cfg} )
-			## Todo: valid check
-			[ ${#arr[*]} -ne 3 ] && cfg= && continue 1
+			[ $rc -eq 1 ] && cfg= && break 1
+			# mmm=$(parse_inetcfg "${cfg}"); rrr=$?
+			# ${DIALOG} --title "Parse Result" --msgbox "mmm=${mmm} rrr=${rrr}"  40 100
+			if ! parse_inetcfg "${cfg}" >/dev/null 2>&1; then
+				cfg=
+				continue 1
+			fi
 		done
 
 		# accumulated savecfgs
 		if [ -n "${cfg}" ]; then
 			savedcfgs+=( "${inetdev}" "${cfg}" ) 
-			echo -e "nower: ${savedcfgs[*]}"
 		fi	
 	done
-	echo "${savedcfgs[*]}"
+
+	:>${TMPINET}
+	for((i=0;i<=${#savedcfgs[*]}-1;i+=2));do
+		gen_network_cloudconfig "${savedcfgs[$i]}" "${savedcfgs[(($i+1))]}" >> ${TMPINET}
+	done
 }
 
 # last confirm and install begin, display progress bar
@@ -293,7 +368,7 @@ prog_inst() {
 		kill -10 $! >/dev/null 2>&1
 
 		progress 11 95 0.4 "writing disk ..." &
-		#// bunzip2 -c  ${MOUNTON}/bzimage/coreos_production_image.bin.bz2 > "${DEVICE}"
+		bunzip2 -c  ${MOUNTON}/bzimage/coreos_production_image.bin.bz2 > "${DEVICE}"
 		sleep 1
 		kill -10 $! >/dev/null 2>&1
 	
@@ -325,13 +400,12 @@ bye() {
 
 
 # Main Body Begin 
-#welcome
-#setup_device
-#setup_role
-#[ "${Role}" == "agent" ] &&  setup_agentcfg
-#setup_system
+welcome
+setup_device
+setup_role
+[ "${Role}" == "agent" ] &&  setup_agentcfg
+setup_system
 setup_inet
-exit 0
 prog_inst
 cloudinit
 bye
