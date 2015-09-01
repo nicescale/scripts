@@ -409,7 +409,7 @@ cloudinit() {
 		exit 1
 	fi
 	${DIALOG} --title "Confirm Cloud Config" \
-		--ok-label "OK" \
+		--exit-label "Confirm" \
 		--textbox "${TMPFILE}" \
 		20 70
 	cp "${TMPFILE}" /mnt1/var/lib/coreos-install/user_data
