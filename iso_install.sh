@@ -1,5 +1,7 @@
 #!/bin/sh
 
+BASEDIR="$(cd $(dirname $0); pwd)"
+CLOUDINIT="${BASEDIR}/csphere-cloudinit"
 BACKTITLE="Installation"
 DIALOG="/usr/share/oem/bin/dialog --backtitle ${BACKTITLE} "
 TMPFILE="$(mktemp)"
@@ -17,6 +19,7 @@ Controller=
 AuthKey=
 
 gen_cloudconfig() {
+	local tmp=
 	cat << EOF
 #cloud-config
 hostname: ${HostName}
@@ -27,16 +30,53 @@ users:
       - sudo
       - docker
 EOF
-	local coreos.units=0
+	local coreos_units=0
 	if [ -f "${TMPINET}" -a -s "${TMPINET}" ]; then
-		local tmp=$(cat "${TMPINET}")
+		tmp=$(cat "${TMPINET}" 2>&-)
 		tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
 		cat <<EOF
 coreos:
   units:
 ${tmp}
 EOF
-		coreos.units=1
+		coreos_units=1
+	fi
+	if [ "${coreos_units}" == "0" ]; then
+		cat <<EOF
+coreos:
+  units:
+EOF
+	fi
+	if [ "${Role}" == "controller" ]; then
+		tmp=$(cat "${CLOUDINIT}/csphere-{mongodb,prometheus,controller}.service" 2>&-)
+		tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
+		cat <<EOF
+${tmp}
+EOF
+	elif [ "${Role}" == "agent" ]; then
+		tmp=$(cat "${CLOUDINIT}/csphere-agent.service" 2>&-)
+		tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
+		cat <<EOF
+${tmp}
+EOF
+	fi
+	tmp=$(cat "${CLOUDINIT}/network-custom.service" 2>&-)
+	tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
+	cat <<EOF
+${tmp}
+EOF
+	tmp=$(cat "${CLOUDINIT}/write_files_br" 2>&-)
+	tmp=$(echo -e "${tmp}" | sed -e 's/^/  /')
+	cat <<EOF
+write_files:
+${tmp}
+EOF
+	if [ "${Role}" == "controller" ]; then
+		tmp=$(cat "${CLOUDINIT}/write_files_prometheus" 2>&-)
+		tmp=$(echo -e "${tmp}" | sed -e 's/^/  /')
+		cat <<EOF
+${tmp}
+EOF
 	fi
 }
 
@@ -444,7 +484,7 @@ setup_role
 [ "${Role}" == "agent" ] &&  setup_agentcfg
 setup_system
 setup_inet
-prog_inst
+# prog_inst
 cloudinit
 bye
-reboot
+# reboot
