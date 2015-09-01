@@ -20,6 +20,8 @@ AuthKey=
 
 gen_cloudconfig() {
 	local tmp=
+
+	## section hostname, users
 	cat << EOF
 #cloud-config
 hostname: ${HostName}
@@ -30,6 +32,8 @@ users:
       - sudo
       - docker
 EOF
+
+	## section coreos
 	local coreos_units=0
 	if [ -f "${TMPINET}" -a -s "${TMPINET}" ]; then
 		tmp=$(cat "${TMPINET}" 2>&-)
@@ -65,6 +69,8 @@ EOF
 	cat <<EOF
 ${tmp}
 EOF
+
+	## section write_files
 	tmp=$(cat "${CLOUDINIT}/write_files_br" 2>&-)
 	tmp=$(echo -e "${tmp}" | sed -e 's/^/  /')
 	cat <<EOF
@@ -76,6 +82,17 @@ EOF
 		tmp=$(echo -e "${tmp}" | sed -e 's/^/  /')
 		cat <<EOF
 ${tmp}
+EOF
+	elif [ "${Role}" == "agent" ]; then
+		cat <<EOF
+    - path: /etc/csphere.env
+      permissions: 0644
+      owner: root
+      content: |
+        ROLE=agent
+        CONTROLLER_ADDR=${Controller}
+        AUTH_KEY=${AuthKey}
+        DEBUG=true
 EOF
 	fi
 }
