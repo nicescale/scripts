@@ -51,13 +51,14 @@ coreos:
   units:
 EOF
 	fi
-	if [ "${Role}" == "controller" ]; then
+	if role_controller; then
 		tmp=$(cat "${CLOUDINIT}"/csphere-{mongodb,prometheus,controller}.service 2>&-)
 		tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
 		cat <<EOF
 ${tmp}
 EOF
-	elif [ "${Role}" == "agent" ]; then
+	fi
+	if role_agent; then
 		tmp=$(cat "${CLOUDINIT}/csphere-agent.service" 2>&-)
 		tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
 		cat <<EOF
@@ -77,7 +78,7 @@ EOF
 write_files:
 ${tmp}
 EOF
-	if [ "${Role}" == "controller" ]; then
+	if role_controller; then
 		tmp=$(cat "${CLOUDINIT}/write_files_prometheus" 2>&-)
 		tmp=$(echo -e "${tmp}" | sed -e 's/^/  /')
 		cat <<EOF
@@ -88,10 +89,14 @@ EOF
     permissions: 0644
     owner: root
     content: |
+      ROLE=controller
+      AUTH_KEY=${AuthKey}
+      DEBUG=true
       DB_URL=mongodb://127.0.0.1:27017
       DB_NAME=csphere
 EOF
-	elif [ "${Role}" == "agent" ]; then
+	fi
+	if role_agent; then
 		cat <<EOF
   - path: /etc/csphere.env
     permissions: 0644
@@ -119,6 +124,10 @@ EOF
 	cat << EOF
 ${tmp}
 EOF
+}
+
+gen_authkey() {
+	head -n 100 /dev/urandom|tr -dc 'a-zA-Z0-9'|head -c 32
 }
 
 inetcfg_error=(
@@ -169,6 +178,16 @@ isipaddr() {
 
 is_between() {
         echo $1 $2 $3 | awk '{if($1>=$2 && $1<=$3){exit 0;} else{exit 1;}}' 2>&- 
+}
+
+role_controller() {
+	[ "${Role}" == "controller" -o "${Role}" == "both" ] && return 0
+	return 1
+}
+
+role_agent() {
+	[ "${Role}" == "agent" -o "${Role}" == "both" ] && return 0
+	return 1
 }
 
 get_blockdev() {
@@ -295,15 +314,18 @@ setup_role() {
 			--radiolist "Role:" 10 60 0 \
 			"controller" "Csphere Controller" 	r1 \
 			"agent"      "Csphere Agent" 		r2 \
+			"both"       "Csphere Controller + Csphere Agent" r3 \
 			2>&1 1>&3
 		)
 		rc=$?
 		exec 3>&-
 		[ $rc -eq 1 ] && exit_confirm
 	done
+	role_controller &&  AuthKey="$(gen_authkey 2>&-)"  	# controller or both, setup AuthKey
+	[ "${Role}" == "both" ] && Controller="127.0.0.1:80"	# only both, setup Controller=127.0.0.1:80
 }
 
-# if agent, setup controller-url / authkey
+# if only agent, setup controller-url / authkey
 setup_agentcfg() {
 	local agentform=
 	local rc=
@@ -506,7 +528,7 @@ bye() {
 welcome
 setup_device
 setup_role
-[ "${Role}" == "agent" ] &&  setup_agentcfg
+[ "${Role}" == "agent" ] &&  setup_agentcfg  # only agent, setup Controller/AuthKey
 setup_system
 setup_inet
 prog_inst
