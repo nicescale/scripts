@@ -61,6 +61,11 @@ EOF
 	if role_agent; then
 		tmp=$(cat "${CLOUDINIT}/csphere-agent.service" 2>&-)
 		tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
+		if role_controller; then 	# add unit dependency if {both} for agent
+			tmp=$( echo -e "${tmp}" | \
+				sed -e "/^[ \t]*\[Unit\]/a\        After=csphere-controller.service"
+				)
+		fi
 		cat <<EOF
 ${tmp}
 EOF
@@ -322,7 +327,9 @@ setup_role() {
 		[ $rc -eq 1 ] && exit_confirm
 	done
 	role_controller &&  AuthKey="$(gen_authkey 2>&-)"  	# controller or both, setup AuthKey
-	[ "${Role}" == "both" ] && Controller="127.0.0.1:80"	# only both, setup Controller=127.0.0.1:80
+	if role_controller && role_agent; then			# only both, setup Controller=127.0.0.1:80
+		Controller="127.0.0.1:80"
+	fi
 }
 
 # if only agent, setup controller-url / authkey
@@ -528,7 +535,9 @@ bye() {
 welcome
 setup_device
 setup_role
-[ "${Role}" == "agent" ] &&  setup_agentcfg  # only agent, setup Controller/AuthKey
+if ! role_controller && role_agent; then       # only agent, setup Controller/AuthKey
+	setup_agentcfg
+fi
 setup_system
 setup_inet
 prog_inst
