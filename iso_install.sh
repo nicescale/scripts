@@ -85,7 +85,7 @@ EOF
 ${tmp}
 EOF
 		cat <<EOF
-  - path: /etc/csphere.env
+  - path: /etc/csphere-controller.env
     permissions: 0644
     owner: root
     content: |
@@ -98,7 +98,7 @@ EOF
 	fi
 	if role_agent; then
 		cat <<EOF
-  - path: /etc/csphere.env
+  - path: /etc/csphere-agent.env
     permissions: 0644
     owner: root
     content: |

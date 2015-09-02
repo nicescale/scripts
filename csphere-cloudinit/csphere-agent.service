@@ -6,7 +6,7 @@
     Description=csphere agent
 
     [Service]
-    EnvironmentFile=/etc/csphere.env 
+    EnvironmentFile=/etc/csphere-agent.env 
     User=root
     ExecStart=/bin/csphere --tls join
 
