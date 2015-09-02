@@ -84,23 +84,23 @@ EOF
 ${tmp}
 EOF
 		cat <<EOF
-    - path: /etc/csphere.env
-      permissions: 0644
-      owner: root
-      content: |
-        DB_URL=mongodb://127.0.0.1:27017
-        DB_NAME=csphere
+  - path: /etc/csphere.env
+    permissions: 0644
+    owner: root
+    content: |
+      DB_URL=mongodb://127.0.0.1:27017
+      DB_NAME=csphere
 EOF
 	elif [ "${Role}" == "agent" ]; then
 		cat <<EOF
-    - path: /etc/csphere.env
-      permissions: 0644
-      owner: root
-      content: |
-        ROLE=agent
-        CONTROLLER_ADDR=${Controller}
-        AUTH_KEY=${AuthKey}
-        DEBUG=true
+  - path: /etc/csphere.env
+    permissions: 0644
+    owner: root
+    content: |
+      ROLE=agent
+      CONTROLLER_ADDR=${Controller}
+      AUTH_KEY=${AuthKey}
+      DEBUG=true
 EOF
 	fi
 }
