@@ -1,0 +1,21 @@
+- name: csphere-prepare.service
+  command: start
+  enable: true
+  content: |
+    [Unit]
+    Description=csphere prepare work
+
+    [Service]
+    User=root
+    Type=oneshot
+    ExecStartPre=/bin/mkdir -p /data/tls
+    ExecStartPre=/bin/mkdir -p /root/.csphere
+    ExecStartPre=/usr/bin/openssl genrsa -out /data/tls/key.pem
+    ExecStartPre=/usr/bin/openssl req -new -key /data/tls/key.pem -out /data/tls/tmp.csr -subj /C=CN/ST=BeiJing/L=BeiJing/O=cSphere/CN=localhost 
+    ExecStartPre=/usr/bin/openssl x509 -in /data/tls/tmp.csr -out /data/tls/cert.pem -req -signkey key.pem -days 3650
+    ExecStartPre=/usr/bin/rm -f /data/tls/tmp.csr 
+    ExecStartPre=/usr/bin/ln -sv /data/tls/{key,cert}.pem /root/.csphere/
+    ExecStart=/bin/true
+
+    [Install]
+    WantedBy=multi-user.target

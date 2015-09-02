@@ -5,11 +5,13 @@
     [Unit]
     Description=csphere controller
     After=csphere-prometheus.service csphere-mongodb.service
+    Requires=csphere-prepare.service
 
     [Service]
     User=root
     EnvironmentFile=/etc/csphere-controller.env
     ExecStartPre=/bin/mkdir -p /root/.ssh
+    ExecStartPre=/bin/mkdir -p /data/logs
     ExecStart=/bin/csphere --tls controller --tsdb-url http://127.0.0.1:9090
 
     [Install]

@@ -4,6 +4,7 @@
   content: |
     [Unit]
     Description=csphere agent
+    Requires=csphere-prepare.service
 
     [Service]
     EnvironmentFile=/etc/csphere-agent.env 
