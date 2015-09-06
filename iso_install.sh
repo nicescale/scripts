@@ -2,8 +2,9 @@
 
 BASEDIR="$(cd $(dirname $0); pwd)"
 CLOUDINIT="${BASEDIR}/csphere-cloudinit"
+DIALOGBIN="/usr/share/oem/bin/dialog"
 BACKTITLE="Installation"
-DIALOG="/usr/share/oem/bin/dialog --backtitle ${BACKTITLE} "
+DIALOG="${DIALOGBIN} --backtitle ${BACKTITLE} "
 TMPFILE="$(mktemp)"
 TMPINET="$(mktemp).inet"
 MOUNTON="/mnt"
@@ -295,6 +296,7 @@ fi
 
 # welcome
 welcome() {
+	${DIALOGBIN} --clear
 	${DIALOG} --title "Welcome" \
 		--msgbox "Welcome to Installation Guid" 5 32
 }
