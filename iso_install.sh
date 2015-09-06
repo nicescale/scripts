@@ -82,7 +82,7 @@ ${tmp}
 EOF
 
 	## section write_files
-	tmp=$(cat "${CLOUDINIT}/write_files_br" 2>&-)
+	tmp=$(cat "${CLOUDINIT}"/{write_files_br,write_files_csphere-prepare} 2>&-)
 	tmp=$(echo -e "${tmp}" | sed -e 's/^/  /')
 	cat <<EOF
 write_files:

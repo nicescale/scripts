@@ -1,0 +1,24 @@
+- path: /etc/csphere-prepare.sh
+  permissions: 0744
+  owner: root
+  content: |
+    #!/bin/sh
+    file="/data/tls/cert.pem"
+    if [ -f "${file}" -a -s "${file}" ]; then
+        :
+    else 
+        /bin/mkdir -p /data/tls
+        /bin/mkdir -p /root/.csphere
+        /usr/bin/openssl genrsa -out /data/tls/key.pem
+        /usr/bin/openssl req -new -key /data/tls/key.pem \
+                      -out /data/tls/tmp.csr \
+                      -subj /C=CN/ST=BeiJing/L=BeiJing/O=cSphere/CN=localhost 
+        /usr/bin/openssl x509 -in /data/tls/tmp.csr \
+                      -out /data/tls/cert.pem \
+                      -req -signkey /data/tls/key.pem \
+                      -days 3650
+        /usr/bin/rm -f /data/tls/tmp.csr 
+        /usr/bin/ln -sv /data/tls/key.pem /root/.csphere/key.pem
+        /usr/bin/ln -sv /data/tls/cert.pem /root/.csphere/cert.pem
+        /bin/true
+    fi
