@@ -243,6 +243,18 @@ get_inetdev(){
 }
 # get_inetdev; echo ${INETDEV[*]}; exit 0
 
+# get nower inet config
+get_inetcfg() {
+	local inet="${1}" ip= gateway= dns=
+	ip=$( ip -d -o -f inet -4 -s addr 2>&- | awk '($2=="'${inet}'"){print $4;exit;}' )
+	gateway=$( route -n 2>&- | awk '($1=="0.0.0.0" && $4~/UG/){print $2;exit;}' )
+	dns=$( awk '(NF==2 && $1=="nameserver"){print $2;exit}' /etc/resolv.conf 2>&- )
+	if [ -n "${ip}" -a -n "${gateway}" -a -n "${dns}" ]; then
+		echo -e "${ip}" "${gateway}" "${dns}"
+	fi
+}
+# get_inetcfg eno16777736; get_inetcfg vethabeb0ea; exit 0
+
 clean_mount() {
 	if mountpoint  -q ${1} >/dev/null 2>&1; then
 		umount ${1}
@@ -443,14 +455,15 @@ setup_inet() {
 		fi
 
 		cfg=
+		now=( $(get_inetcfg "${inetdev}") )
 		while [ -z "${cfg}" ]; do
 			exec 3>&1
 			cfg=$(	${DIALOG} --title "SetUp ${inetdev}:" \
 					--ok-label "Save" --cancel-label "Discard" \
 					--form "Parameter:" 10 60 0 \
-					"IPAddres :"     1 1 ""  1 12 32 0 \
-					"Gateway  :"     2 1 ""  2 12 32 0 \
-					"DnsMaster:"     3 1 ""  3 12 32 0 \
+					"IPAddres :"     1 1 "${now[0]}"  1 12 32 0 \
+					"Gateway  :"     2 1 "${now[1]}"  2 12 32 0 \
+					"DnsMaster:"     3 1 "${now[2]}"  3 12 32 0 \
 					2>&1 1>&3
 				)
 			rc=$?
