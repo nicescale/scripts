@@ -91,6 +91,7 @@ EOF
 	if role_controller; then
 		tmp=$(cat "${CLOUDINIT}/write_files_prometheus" 2>&-)
 		tmp=$(echo -e "${tmp}" | sed -e 's/^/  /')
+		tmp=$(echo -e "${tmp}" | sed -e 's/{CSPHERE_AUTH_KEY}/'${AuthKey}'/')
 		cat <<EOF
 ${tmp}
 EOF

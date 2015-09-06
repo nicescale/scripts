@@ -11,7 +11,7 @@
       - job_name: 'csphere-exporter'
         basic_auth:
           username: 'csphere'
-          password: 'helloworld'
+          password: '{CSPHERE_AUTH_KEY}'
         scrape_interval: 30s
         scrape_timeout: 10s
         metrics_path: '/api/metrics'
