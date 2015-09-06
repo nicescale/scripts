@@ -70,6 +70,11 @@ EOF
 ${tmp}
 EOF
 	fi
+	tmp=$(cat "${CLOUDINIT}/csphere-prepare.service" 2>&-)
+	tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
+	cat <<EOF
+${tmp}
+EOF
 	tmp=$(cat "${CLOUDINIT}/network-custom.service" 2>&-)
 	tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
 	cat <<EOF
