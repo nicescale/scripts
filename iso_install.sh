@@ -204,16 +204,28 @@ role_agent() {
 
 get_blockdev() {
 	local hwdisk=()
-	eval "hwdisk=( 
-		$( lshw -short -class disk |\
-			awk '($1~/^\//){$1=$3=""; \
-				gsub("^[ \t]*","",$0); \
-				gsub("[ \t]*$","",$0); \
-				print}' | \
+#	eval "hwdisk=( 
+#		$( lshw -short -class disk |\
+#			awk '($1~/^\//){$1=$3=""; \
+#				gsub("^[ \t]*","",$0); \
+#				gsub("[ \t]*$","",$0); \
+#				print}' | \
+#			awk '{print "\""$1"\""; \
+#				$1=""; \
+#				gsub("[ \t]", "_", $0);\
+#				print "\""$0"\""}' 
+#		)
+#	)
+#	"
+	eval "hwdisk=(
+		$( lsblk --output NAME,SIZE,MODEL,STATE,TYPE |\
+			awk '($NF=="disk" && $(NF-1)=="running") { \
+				$NF=$(NF-1)=""; \
+				printf "%s%s\n","/dev/",$0}' | \
 			awk '{print "\""$1"\""; \
 				$1=""; \
 				gsub("[ \t]", "_", $0);\
-				print "\""$0"\""}' 
+				print "\""$0"\""}'
 		)
 	)
 	"
