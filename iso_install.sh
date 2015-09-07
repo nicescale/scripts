@@ -296,7 +296,11 @@ fi
 
 # welcome
 welcome() {
-	${DIALOGBIN} --clear
+	local i
+	for((i=1;i<=3;i++));do
+		${DIALOGBIN} --clear
+		sleep 1s
+	done
 	${DIALOG} --title "Welcome" \
 		--msgbox "Welcome to Installation Guid" 5 32
 }
