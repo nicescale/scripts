@@ -9,7 +9,10 @@
     [Service]
     EnvironmentFile=/etc/csphere-agent.env 
     User=root
+    ExecStartPre=/bin/sleep 1
     ExecStart=/bin/csphere --tls join
+    Restart=on-failure
+    RestartSec=3
 
     [Install]
     WantedBy=multi-user.target
