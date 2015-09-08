@@ -378,7 +378,7 @@ setup_contrcfg() {
 	AuthKey="$(gen_authkey 2>&-)"  		# setup AuthKey
 
 	local rc=
-	while [ -z "${ControllerPort}" ]; do	# setup ControllerPort
+	while :; do				# setup ControllerPort
 		exec 3>&1
 		ControllerPort=$( ${DIALOG} --title "Controller Settings" \
 			--cancel-label "Exit" \
@@ -389,9 +389,11 @@ setup_contrcfg() {
 		rc=$?
 		exec 3>&-
 		[ $rc -eq 1 ] && exit_confirm
+		[ -z "${ControllerPort}" ] && continue
 		ControllerPort="${ControllerPort//[ \t]}"
 		[ -n "${ControllerPort//[0-9]}" ] && continue
 		[ "${ControllerPort}" == "22" ] && continue
+		break
 	done
 
 	if role_agent; then			# if both, setup Controller=127.0.0.1:${ControllerPort}
