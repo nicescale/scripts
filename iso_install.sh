@@ -218,10 +218,16 @@ get_blockdev() {
 #	)
 #	"
 	eval "hwdisk=(
-		$( lsblk --output NAME,SIZE,MODEL,STATE,TYPE |\
-			awk '($NF=="disk" && $(NF-1)=="running") { \
-				$NF=$(NF-1)=""; \
-				printf "%s%s\n","/dev/",$0}' | \
+		$( lsblk --output NAME,TYPE,SIZE,MODEL |\
+			awk '($2=="disk"){ $2=""; \
+				if(NF==3){ \
+					printf "%s%s%s\n", "/dev/",$0," Unknown Disk"; \
+					next; \
+				}if(NF>3){ \
+					printf "%s%s\n","/dev/",$0 \
+				}else{ \
+					next; \
+				} }' | \
 			awk '{print "\""$1"\""; \
 				$1=""; \
 				gsub("[ \t]", "_", $0);\
