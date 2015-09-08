@@ -17,6 +17,7 @@ DefaultUser="core"
 Password=
 Role=
 Controller=
+ControllerPort=
 AuthKey=
 
 gen_cloudconfig() {
@@ -106,6 +107,7 @@ EOF
       DEBUG=true
       DB_URL=mongodb://127.0.0.1:27017
       DB_NAME=csphere
+      LISTEN_ADDR=:${ControllerPort}
 EOF
 	fi
 	if role_agent; then
@@ -368,9 +370,31 @@ setup_role() {
 		exec 3>&-
 		[ $rc -eq 1 ] && exit_confirm
 	done
-	role_controller &&  AuthKey="$(gen_authkey 2>&-)"  	# controller or both, setup AuthKey
-	if role_controller && role_agent; then			# only both, setup Controller=127.0.0.1:80
-		Controller="127.0.0.1:80"
+}
+
+# if controller(include both), setup Controller
+setup_contrcfg() {
+	AuthKey="$(gen_authkey 2>&-)"  		# setup AuthKey
+
+	local rc=
+	while [ -z "${ControllerPort}" ]; do	# setup ControllerPort
+		exec 3>&1
+		ControllerPort=$( ${DIALOG} --title "Controller Settings" \
+			--cancel-label "Exit" \
+			--form "Parameter:" 7 60 0 \
+			"HTTP Port:"    1 1 "80" 1 12 32 0 \
+			2>&1 1>&3
+		)
+		rc=$?
+		exec 3>&-
+		[ $rc -eq 1 ] && exit_confirm
+		ControllerPort="${ControllerPort//[ \t]}"
+		[ -n "${ControllerPort//[0-9]}" ] && continue
+		[ "${ControllerPort}" == "22" ] && continue
+	done
+
+	if role_agent; then			# if both, setup Controller=127.0.0.1:${ControllerPort}
+		Controller="127.0.0.1:${ControllerPort}"
 	fi
 }
 
@@ -578,6 +602,9 @@ bye() {
 welcome
 setup_device
 setup_role
+if role_controller; then			# controller, setup AuthKey/ControllerPort 
+	setup_contrcfg				# if both, setup Controller
+fi
 if ! role_controller && role_agent; then       # only agent, setup Controller/AuthKey
 	setup_agentcfg
 fi
