@@ -94,6 +94,7 @@ EOF
 		tmp=$(cat "${CLOUDINIT}/write_files_prometheus" 2>&-)
 		tmp=$(echo -e "${tmp}" | sed -e 's/^/  /')
 		tmp=$(echo -e "${tmp}" | sed -e 's/{CSPHERE_AUTH_KEY}/'${AuthKey}'/')
+		tmp=$(echo -e "${tmp}" | sed -e 's/{CSPHERE_CONTROLLER_PORT}/'${ControllerPort}'/')
 		cat <<EOF
 ${tmp}
 EOF

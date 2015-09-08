@@ -16,4 +16,4 @@
         scrape_timeout: 10s
         metrics_path: '/api/metrics'
         target_groups:
-          - targets: ['127.0.0.1']
+          - targets: ['127.0.0.1:{CSPHERE_CONTROLLER_PORT}']
