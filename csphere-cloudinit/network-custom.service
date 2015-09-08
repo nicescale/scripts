@@ -4,8 +4,8 @@
   content: |
     [Unit]
     Description=csphere network config
-    After=network-online.target
-    Wants=network-online.target
+    After=systemd-networkd-wait-online.service
+    Wants=systemd-networkd-wait-online.service
 
     [Service]
     User=root
@@ -13,4 +13,4 @@
     ExecStart=/etc/br.sh
 
     [Install]
-    WantedBy=multi-user.target
+    WantedBy=network-online.target
