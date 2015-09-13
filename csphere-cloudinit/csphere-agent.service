@@ -7,7 +7,7 @@
     Requires=csphere-prepare.service
 
     [Service]
-    EnvironmentFile=/etc/csphere-agent.env 
+    EnvironmentFile=/etc/csphere/csphere-agent.env
     User=root
     ExecStartPre=/bin/sleep 1
     ExecStart=/bin/csphere --tls join

@@ -10,7 +10,7 @@
     [Service]
     User=root
     Type=oneshot
-    ExecStart=/etc/br.sh
+    ExecStart=/etc/csphere/br.sh
 
     [Install]
     WantedBy=network-online.target

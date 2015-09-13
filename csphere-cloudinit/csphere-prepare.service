@@ -8,7 +8,7 @@
     [Service]
     User=root
     Type=oneshot
-    ExecStart=/etc/csphere-prepare.sh
+    ExecStart=/etc/csphere/csphere-prepare.sh
 
     [Install]
     WantedBy=multi-user.target

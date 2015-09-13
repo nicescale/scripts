@@ -1,4 +1,4 @@
-- path: /etc/br.sh
+- path: /etc/csphere/br.sh
   permissions: 0744
   owner: root
   content: |

@@ -1,4 +1,4 @@
-- path: /etc/csphere-prepare.sh
+- path: /etc/csphere/csphere-prepare.sh
   permissions: 0744
   owner: root
   content: |

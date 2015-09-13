@@ -9,7 +9,7 @@
 
     [Service]
     User=root
-    EnvironmentFile=/etc/csphere-controller.env
+    EnvironmentFile=/etc/csphere/csphere-controller.env
     ExecStartPre=/bin/mkdir -p /root/.ssh
     ExecStartPre=/bin/mkdir -p /data/logs
     ExecStart=/bin/csphere --tls controller --tsdb-url http://127.0.0.1:9090
