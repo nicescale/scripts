@@ -25,7 +25,7 @@ ROOT_FS_DIR="$FLAGS_root"
 [ -n "$ROOT_FS_DIR" ] || die "--root is required."
 [ -d "$ROOT_FS_DIR" ] || die "Root FS does not exist? ($ROOT_FS_DIR)"
 
-COREOS_VERSION_NAME="CoreOS"
+COREOS_VERSION_NAME="COS"
 
 # DISTRIB_* are the standard lsb-release names
 sudo mkdir -p "${ROOT_FS_DIR}/usr/share/coreos" "${ROOT_FS_DIR}/etc/coreos"
@@ -48,8 +48,8 @@ VERSION_ID=$COREOS_VERSION_ID
 BUILD_ID=$COREOS_BUILD_ID
 PRETTY_NAME="$COREOS_VERSION_NAME $COREOS_VERSION_STRING"
 ANSI_COLOR="1;32"
-HOME_URL="https://coreos.com/"
-BUG_REPORT_URL="https://github.com/coreos/bugs/issues"
+HOME_URL="https://csphere.cn/"
+BUG_REPORT_URL="https://github.com/nicescale/bugs/issues"
 EOF
 sudo ln -sf "../usr/lib/os-release" "${ROOT_FS_DIR}/etc/os-release"
 sudo ln -sf "../../lib/os-release" "${ROOT_FS_DIR}/usr/share/coreos/os-release"

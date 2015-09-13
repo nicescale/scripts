@@ -177,9 +177,11 @@ fi
 info "Compressing ${BUILD_DIR}/${COREOS_PRODUCTION_IMAGE_NAME}"
 lbzip2 --compress --keep -f "${BUILD_DIR}/${COREOS_PRODUCTION_IMAGE_NAME}"
 bzImage="${BUILD_DIR}/${COREOS_PRODUCTION_IMAGE_NAME}.bz2"
+cosName="${BUILD_DIR}/cos_production_image.bin.bz2"
 [ -f "${bzImage}" -a -s "${bzImage}" ] || die "${bzImage} not prepared!"
-info "${bzImage} created!"
-echo "${bzImage}" > "${SCRIPT_ROOT}/.pipefile"
+mv ${bzImage} ${cosName} || die "rename failed!"
+info "${cosName} created!"
+echo "${cosName}" > "${SCRIPT_ROOT}/.pipefile"
 
 if [[ ${FLAGS_generate_update} -eq ${FLAGS_TRUE} ]] || \
    [[ ${FLAGS_extract_update} -eq ${FLAGS_TRUE} ]]

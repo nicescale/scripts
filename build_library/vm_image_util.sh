@@ -544,7 +544,7 @@ _write_iso_disk() {
 
     mkdir "${iso_target}"
     pushd "${iso_target}" >/dev/null
-    mkdir isolinux syslinux coreos
+    mkdir isolinux syslinux cos
     # install bin image
     # I have trouble on install bin image into initramfs cpio file
     # as partition /usr is read-only and partition /usr/share/oem hasn't enough space
@@ -553,22 +553,22 @@ _write_iso_disk() {
     bz2file=$( cat "${SCRIPT_ROOT}/.pipefile" 2>&- )
     [ -z "${bz2file}" ] && die "bz2 Images path not found"
     [ -f "${bz2file}" -a -s "${bz2file}" ] || die "bz2 Images ${bz2file} not prepared"
-    cp "${bz2file}" bzimage/coreos_production_image.bin.bz2
-    _write_cpio_common "$1" "${iso_target}/coreos/cpio.gz"
-    cp "${base_dir}"/boot/vmlinuz "${iso_target}/coreos/vmlinuz"
+    cp "${bz2file}" bzimage/cos_production_image.bin.bz2
+    _write_cpio_common "$1" "${iso_target}/cos/cpio.gz"
+    cp "${base_dir}"/boot/vmlinuz "${iso_target}/cos/vmlinuz"
     cp -R /usr/share/syslinux/* isolinux/
     cat<<EOF > isolinux/isolinux.cfg
 INCLUDE /syslinux/syslinux.cfg
 EOF
     cat<<EOF > syslinux/syslinux.cfg
-default coreos
+default COS
 prompt 1
 timeout 15
 
-label coreos
+label COS
   menu default
-  kernel /coreos/vmlinuz
-  append initrd=/coreos/cpio.gz coreos.autologin coreos.isoinstall init=/usr/lib/systemd/systemd
+  kernel /cos/vmlinuz
+  append initrd=/cos/cpio.gz coreos.autologin coreos.isoinstall init=/usr/lib/systemd/systemd
 EOF
     mkisofs -v -l -r -J -o $2 -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table .
     isohybrid $2

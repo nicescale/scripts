@@ -561,7 +561,7 @@ prog_inst() {
 		kill -10 $! >/dev/null 2>&1
 
 		progress 11 95 0.4 "writing disk ..." &
-		bunzip2 -c  ${MOUNTON}/bzimage/coreos_production_image.bin.bz2 > "${DEVICE}"
+		bunzip2 -c  ${MOUNTON}/bzimage/cos_production_image.bin.bz2 > "${DEVICE}"
 		sleep 1
 		kill -10 $! >/dev/null 2>&1
 	
