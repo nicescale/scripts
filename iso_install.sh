@@ -13,7 +13,7 @@ INETDEV=()
 DEVICE=
 
 HostName=$(mktemp -u XXXXXXXX)
-DefaultUser="core"
+DefaultUser="cos"
 Password=
 Role=
 Controller=
