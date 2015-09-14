@@ -274,6 +274,9 @@ sudo -E "${EMERGE_CMD[@]}" "${EMERGE_FLAGS[@]}" csphere/prometheus
 info "Merging csphere"
 sudo -E "${EMERGE_CMD[@]}" "${EMERGE_FLAGS[@]}" csphere/csphere
 
+info "Merging skydns"
+sudo -E "${EMERGE_CMD[@]}" "${EMERGE_FLAGS[@]}" csphere/skydns
+
 info "Merging board packages now"
 sudo -E "${EMERGE_CMD[@]}" "${EMERGE_FLAGS[@]}" \
     @system coreos-devel/board-packages

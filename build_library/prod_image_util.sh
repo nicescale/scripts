@@ -49,6 +49,7 @@ create_prod_image() {
   emerge_to_image "${root_fs_dir}" "${base_pkg}"
   emerge_to_image "${root_fs_dir}" "csphere/prometheus"
   emerge_to_image "${root_fs_dir}" "csphere/csphere"
+  emerge_to_image "${root_fs_dir}" "csphere/skydns"
   write_packages "${root_fs_dir}" "${BUILD_DIR}/${image_packages}"
   write_licenses "${root_fs_dir}" "${BUILD_DIR}/${image_licenses}"
   extract_docs "${root_fs_dir}"
