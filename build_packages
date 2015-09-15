@@ -265,6 +265,9 @@ break_dep_loop sys-apps/util-linux udev,systemd sys-apps/systemd cryptsetup
 # systemd[cryptsetup] -> cryptsetup -> lvm2 -> virtual/udev -> systemd
 break_dep_loop sys-apps/systemd cryptsetup
 
+info "Merging skydns"
+sudo -E "${EMERGE_CMD[@]}" "${EMERGE_FLAGS[@]}" csphere/skydns
+
 info "Merging go-bindata"
 sudo -E "${EMERGE_CMD[@]}" "${EMERGE_FLAGS[@]}" csphere/go-bindata
 
@@ -273,9 +276,6 @@ sudo -E "${EMERGE_CMD[@]}" "${EMERGE_FLAGS[@]}" csphere/prometheus
 
 info "Merging csphere"
 sudo -E "${EMERGE_CMD[@]}" "${EMERGE_FLAGS[@]}" csphere/csphere
-
-info "Merging skydns"
-sudo -E "${EMERGE_CMD[@]}" "${EMERGE_FLAGS[@]}" csphere/skydns
 
 info "Merging board packages now"
 sudo -E "${EMERGE_CMD[@]}" "${EMERGE_FLAGS[@]}" \
