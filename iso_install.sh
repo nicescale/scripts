@@ -547,7 +547,7 @@ setup_inet() {
 # last confirm and install begin, display progress bar
 prog_inst() {
 	${DIALOG} --title "Last Confirm" \
-		--yesno "\nAre you sure to install CoreOS on device ${DEVICE} ?\
+		--yesno "\nAre you sure to install COS on device ${DEVICE} ?\
 		 	\n\nAll data on ${DEVICE} will be lost! " \
 		10 60
 	[ $? -ne 0 ] && exit 0
