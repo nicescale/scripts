@@ -280,7 +280,8 @@ readonly COREOS_EPOCH=1372636800
 TODAYS_VERSION=$(( (`date +%s` - ${COREOS_EPOCH}) / 86400 ))
 
 # Download URL prefix for SDK and board binary packages
-: ${COREOS_DEV_BUILDS:=http://builds.developer.core-os.net}
+# : ${COREOS_DEV_BUILDS:=http://builds.developer.core-os.net}
+: ${COREOS_DEV_BUILDS:=http://127.0.0.1}
 
 # Load developer's custom settings.  Default location is in scripts dir,
 # since that's available both inside and outside the chroot.  By convention,
