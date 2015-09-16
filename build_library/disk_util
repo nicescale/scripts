@@ -102,7 +102,7 @@ def LoadPartitionConfig(options):
           raise InvalidLayout('Invalid uuid %r: %s' % (part['uuid'], e))
 
       if 'fs_type' in part:
-        if part['fs_type'] not in ('btrfs', 'ext2', 'ext4', 'vfat','xfs'):
+        if part['fs_type'] not in ('btrfs', 'ext2', 'ext4', 'vfat'):
           raise InvalidLayout('Invalid fs_type: %r' % part['fs_type'])
 
       if 'fs_subvolume' in part:
@@ -430,17 +430,6 @@ def FormatExt(part, device):
   Sudo(tune_cmd + [device], stdout_null=True)
 
 
-def FormatXfs(part, device):
-  """Format an xfs filesystem.
-
-  Args:
-    part: dict defining the partition
-    device: name of the block device to format
-  """
-  # Sudo(['mkfs.xfs', '-b', 'log=' + str(part['blocks']),
-  Sudo(['mkfs.xfs', device])
-
-
 def FormatFat(part, device):
   """Format a FAT filesystem.
 
@@ -503,8 +492,6 @@ def FormatPartition(options, part):
       FormatBtrfs(part, loop_dev)
     elif part['fs_type'] == 'vfat':
       FormatFat(part, loop_dev)
-    elif part['fs_type'] == 'xfs':
-      FormatXfs(part, loop_dev)
     else:
       raise Exception("Unhandled fs type %s" % part['fs_type'])
 
