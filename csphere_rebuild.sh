@@ -14,9 +14,9 @@ case "${mode}" in
 	./setup_board --default --board=amd64-usr
 	./build_packages --csphere  \
 		--csphere_assets_path="${assets_url}" \
-		--csphere_mongod_path="${mongod_url}" \
+		--csphere_mongod_path="${mongod_url}"
 		# --reuse_pkgs_from_local_boards \  # this flag is abondoned
-		--nogetbinpkg
+		# --nogetbinpkg  # directely use built binary to save time
 	./build_image prod
 	;;
 "iso")
