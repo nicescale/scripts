@@ -4,6 +4,9 @@ set -e
 assets_url="http://tsing:e0cab9e41247ec200b7eb6ec5cb159ec@54.64.118.80/job/csphere-fe/lastSuccessfulBuild/artifact/dist/assets-0.13.tgz"
 mongod_url="http://192.157.213.209/mongo-3.0.3/mongo-3.0.3.tgz"
 
+# remout /website
+sudo mount -o remount,rw /website
+
 mode=$1
 case "${mode}" in
 "all")
