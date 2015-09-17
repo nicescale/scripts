@@ -3,7 +3,7 @@
   enable: true
   content: |
     [Unit]
-    Description=High-performance, schema-free document-oriented database
+    Description=Csphere Mongodb Service
     After=network.target
     
     [Service]

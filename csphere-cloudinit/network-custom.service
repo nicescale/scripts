@@ -3,7 +3,7 @@
   enable: true
   content: |
     [Unit]
-    Description=csphere network config
+    Description=Csphere Network Config
     After=systemd-networkd-wait-online.service
     Wants=systemd-networkd-wait-online.service
 

@@ -3,7 +3,7 @@
   enable: true
   content: |
     [Unit]
-    Description=An open-source service monitoring system and time series database
+    Description=Csphere Prometheus Service
     After=network.target
     
     [Service]

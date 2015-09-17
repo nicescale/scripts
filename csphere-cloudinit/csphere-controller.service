@@ -3,7 +3,7 @@
   enable: true
   content: |
     [Unit]
-    Description=csphere controller
+    Description=Csphere Controller Service
     After=csphere-prometheus.service csphere-mongodb.service
     Requires=csphere-prepare.service
 

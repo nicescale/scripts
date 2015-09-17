@@ -3,7 +3,7 @@
   enable: true
   content: |
     [Unit]
-    Description=csphere prepare work
+    Description=Csphere Prepare Work
 
     [Service]
     User=root
