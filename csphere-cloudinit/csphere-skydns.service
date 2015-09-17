@@ -1,0 +1,14 @@
+- name: csphere-skydns.service
+  command: start
+  enable: true
+  content: |
+    [Unit]
+    Description=Csphere SkyDns Service
+    Requires=etcd2.service
+    
+    [Service]
+    User=root
+    ExecStart=/bin/skydns -verbose -addr="127.0.0.1:53" -domain="csphere.local." -machines="127.0.0.1:4001"
+
+    [Install]
+    WantedBy=multi-user.target

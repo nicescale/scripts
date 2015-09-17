@@ -3,8 +3,9 @@
   enable: true
   content: |
     [Unit]
-    Description=csphere agent
+    Description=Csphere Agent Service
     Requires=csphere-prepare.service
+    Requires=csphere-skydns.service
 
     [Service]
     EnvironmentFile=/etc/csphere/csphere-agent.env
