@@ -4,6 +4,7 @@
   content: |
     [Unit]
     Description=Csphere Prepare Work
+    Requires=csphere-etcd2.service
 
     [Service]
     User=root

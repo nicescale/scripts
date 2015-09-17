@@ -4,11 +4,11 @@
   content: |
     [Unit]
     Description=Csphere SkyDns Service
-    Requires=etcd2.service
+    Requires=csphere-etcd2.service
     
     [Service]
     User=root
-    ExecStart=/bin/skydns -verbose -addr="127.0.0.1:53" -domain="csphere.local." -machines="127.0.0.1:4001"
+    ExecStart=/bin/skydns -verbose -addr="127.0.0.1:53" -domain="csphere.local." -machines="127.0.0.1:2379"
 
     [Install]
     WantedBy=multi-user.target
