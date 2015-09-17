@@ -1,5 +1,9 @@
 #!/bin/sh
-
+set -e
+#
+# build binary packages from our local modified codes and
+# replace the binary packages of local http file service
+#
 BASEDIR="$(cd $(dirname $0); /bin/pwd)"
 BINHOSTBASE="/website"
 BINHOSTPATH="${BINHOSTBASE}/boards/amd64-usr/723.3.0/pkgs/"
@@ -13,7 +17,7 @@ SUFFIXTBZ=".tbz2"
 SUFFIXEBD=".ebuild"
 BUILDLST=(
 	"net-misc/ntp-4.2.8-r3"  "coreos-overlay/net-misc/ntp/ntp-4.2.8-r3" ""
-	"sys-apps/baselayout-3.0.13" "coreos-overlay/sys-apps/baselayout/baselayout-3.0.14" ""
+	"sys-apps/baselayout-3.0.14" "coreos-overlay/sys-apps/baselayout/baselayout-3.0.14" ""
 	"coreos-base/coreos-init-0.0.1-r108" "coreos-overlay/coreos-base/coreos-init/coreos-init-0.0.1-r108" "symlink-usr"
 )
 
@@ -23,7 +27,7 @@ get_bindest() {
 		$FMAKECONF 2>&-
 	)
 	[ -d "${d}" ] || d="${DEFAULT_BINDEST}"
-	echo -e "${d}"
+	echo -e "${d}/"
 }
 
 get_md5sum(){
@@ -80,4 +84,5 @@ BINDEST=$(get_bindest)
 for((i=0;i<=${#BUILDLST[*]}-1;i+=3));do
 	build_package ${BUILDLST[$(($i+1))]} ${BUILDLST[$(($i+2))]}
 	replace_package ${BUILDLST[$i]}
+	refresh_digest ${BUILDLST[$i]}
 done
