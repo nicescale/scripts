@@ -472,7 +472,7 @@ setup_agentcfg() {
 		agentform=( ${agentform} )
 		Controller="${agentform[0]}"; [ -z "${Controller}" ] && continue
 		AuthKey="${agentform[1]}"; [ -z "${AuthKey}" ] && continue
-		DiscoveryUrl="http://${Controller%%:*}}:2379/v2/keys/discovery/hellocsphere"
+		DiscoveryUrl="http://${Controller%%:*}:2379/v2/keys/discovery/hellocsphere"
 		break
 	done
 }
