@@ -6,7 +6,7 @@
     Description=Csphere Controller Service
     After=csphere-prometheus.service csphere-mongodb.service
     Requires=csphere-prepare.service
-    Requires=etcd2.service
+    Requires=csphere-etcd2.service
 
     [Service]
     User=root

@@ -8,10 +8,19 @@
     discovery="{ETCD_DISCOVERY_URL}"
     listen="0.0.0.0"
     ipaddr="$( ifconfig $(lshw -short -class network 2>&- | awk '($1~/^\//){print $2;exit}') | awk '($1=="inet"){print $2;exit}' )"
+    if [ -z "${ipaddr}" ]; then
+        ipaddr=$( ip a | grep -v -E -w "docker0|lo" | awk '($1=="inet"){print $2;exit}' |awk -F"/" '{print $1}' )
+    fi
+    if [ -z "${ipaddr}" ]; then
+        echo "local ipaddr not found"
+        /bin/false
+    fi
     if [ "${role}" == "agent" ]; then
-        /bin/etcd2 --listen-client-urls="http://${listen}:2379" -advertise-client-urls="http://${ipaddr}:2379" -initial-advertise-peer-urls="http://${ipaddr}:2380" -listen-peer-urls="http://${ipaddr}:2380"  -discovery="${discovery}"
-    elsif [ "${role}" == "controller" ]; then
-        /bin/etcd2 --listen-client-urls="http://${listen}:2379" -advertise-client-urls="http://${ipaddr}:2379" -initial-advertise-peer-urls="http://${ipaddr}:2380" -listen-peer-urls="http://${ipaddr}:2380"
+        # -initial-advertise-peer-urls="http://${ipaddr}:2380" ?
+        /bin/etcd2 --listen-client-urls="http://${listen}:2379" -advertise-client-urls="http://${ipaddr}:2379" -listen-peer-urls="http://${ipaddr}:2380"  -discovery="${discovery}"  &
+    elif [ "${role}" == "controller" ]; then
+        # -initial-advertise-peer-urls="http://${ipaddr}:2380"  ?
+        /bin/etcd2 --listen-client-urls="http://${listen}:2379" -advertise-client-urls="http://${ipaddr}:2379" -listen-peer-urls="http://${ipaddr}:2380" &
         sleep 1s
         tokenf="/etc/.csphere-etc2.token.url"
         if [ -f "${tokenf}" -a -s "${tokenf}" ]; then

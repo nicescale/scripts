@@ -72,6 +72,11 @@ EOF
 		cat <<EOF
 ${tmp}
 EOF
+		tmp=$(cat "${CLOUDINIT}/csphere-skydns.service" 2>&-)
+		tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
+		cat <<EOF
+${tmp}
+EOF
 	fi
 	tmp=$(cat "${CLOUDINIT}/csphere-prepare.service" 2>&-)
 	tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
@@ -606,6 +611,7 @@ cloudinit() {
 	if ! coreos-cloudinit -validate --from-file="${TMPFILE}" >/dev/null 2>&1;  then
 		${DIALOG} --title "ERROR" \
 			--msgbox "ERROR: Cloud Config Validation Error!" 5 41
+		clean_mount /mnt1
 		exit 1
 	fi
 	${DIALOG} --title "Confirm Cloud Config" \

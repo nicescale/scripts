@@ -9,8 +9,14 @@
 
     [Service]
     User=root
+    # REMOVE ME
     Type=oneshot
+    Environment=ETCD_DATA_DIR=/var/lib/etcd2
     ExecStart=/etc/csphere/csphere-etcd2.sh
+    # USE THIS
+    # Restart=always
+    # RestartSec=10s
+    # LimitNOFILE=40000
 
     [Install]
     WantedBy=multi-user.target
