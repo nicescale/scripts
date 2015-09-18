@@ -11,7 +11,7 @@
     EnvironmentFile=/etc/csphere/csphere-agent.env
     User=root
     ExecStartPre=/bin/sleep 1
-    ExecStart=/bin/csphere --dns=$LOCAL_ADDR --tls join
+    ExecStart=/bin/csphere --tls join --dns=$LOCAL_ADDR
     Restart=on-failure
     RestartSec=3
 
