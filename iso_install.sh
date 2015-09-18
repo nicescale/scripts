@@ -60,6 +60,11 @@ EOF
 		cat <<EOF
 ${tmp}
 EOF
+		tmp=$(cat "${CLOUDINIT}"/csphere-etcd2-after.service 2>&-)
+		tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
+		cat <<EOF
+${tmp}
+EOF
 	fi
 	if role_agent; then
 		tmp=$(cat "${CLOUDINIT}/csphere-agent.service" 2>&-)
@@ -106,6 +111,11 @@ EOF
 		tmp=$(echo -e "${tmp}" | sed -e 's/^/  /')
 		tmp=$(echo -e "${tmp}" | sed -e 's/{CSPHERE_AUTH_KEY}/'${AuthKey}'/')
 		tmp=$(echo -e "${tmp}" | sed -e 's/{CSPHERE_CONTROLLER_PORT}/'${ControllerPort}'/')
+		cat <<EOF
+${tmp}
+EOF
+		tmp=$(cat "${CLOUDINIT}/write_files_csphere-etcd2-after" 2>&-)
+		tmp=$(echo -e "${tmp}" | sed -e 's/^/  /')
 		cat <<EOF
 ${tmp}
 EOF

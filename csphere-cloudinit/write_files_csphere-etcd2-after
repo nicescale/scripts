@@ -1,0 +1,16 @@
+- path: /etc/csphere/csphere-etcd2-after.sh
+  permissions: 0744
+  owner: root
+  content: |
+    #!/bin/sh
+    set -ex
+    tokenf="/etc/.csphere-etc2.token.url"
+    if [ -f "${tokenf}" -a -s "${tokenf}" ]; then
+        :   
+    else
+        token=$(head -n 100 /dev/urandom|tr -dc 'a-z0-9'|head -c 40) 
+        sizen=3
+        url="http://localhost:2379/v2/keys/discovery/${token}"
+        curl -X PUT "${url}/_config/size" -d value=${sizen}
+        echo -e "${url}" > "${tokenf}"
+    fi
