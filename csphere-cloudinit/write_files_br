@@ -7,7 +7,7 @@
 
     dev=
     dockerenv="/run/flannel_docker_opts.env"
-    gw=$(route -n|awk '{ if ($1 == "0.0.0.0")  print $2}')
+    gw=$(route -n|awk '($1=="0.0.0.0" && $4=="UG"){print $2;exit}')
     echo "got default gateway: $gw"
     for  card in  $(lshw -class network|grep 'logical name'|awk -F ':' '{print $2}');do
        echo "now config : $card in promisc mode"
