@@ -22,3 +22,21 @@
         /usr/bin/ln -sv /data/tls/cert.pem /root/.csphere/cert.pem
         /bin/true
     fi
+
+    if [ -s /etc/csphere/csphere-agent.env ]; then
+        ipaddr="$( ifconfig $(lshw -short -class network 2>&- |\
+                    awk '($1~/^\//){print $2;exit}') |\
+                    awk '($1=="inet"){print $2;exit}'
+            )";
+        if [ -z "${ipaddr}" ]; then
+            ipaddr=$( ip a | grep -v -E -w "docker0|lo" |\
+                    awk '($1=="inet"){print $2;exit}' |\
+                    awk -F"/" '{print $1}'
+            );
+       fi
+       if [ -z "${ipaddr}" ]; then
+            echo "no local ipaddr found"
+            exit 1
+       fi
+       sed -i 's/{LOCAL_IP}/'"$ipaddr"'/g' /etc/csphere/csphere-agent.env
+    fi
