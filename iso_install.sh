@@ -216,6 +216,10 @@ parse_inetcfg() {
 	ipaddr=$(echo -e "${s}" | awk '{print;exit 0}')
 	gateway=$(echo -e "${s}" | awk '(NR==2){print;exit}')
 	dns=$(echo -e "${s}" | awk '(NR==3){print;exit}')
+	pnum=$(echo -e "${ipaddr}" | awk -F"/" '{print NF}')
+	if [ $pnum -ne 2 ]; then
+		return 1
+	fi
 	ipp1=$(echo -e "${ipaddr}" | awk -F"/" '{print $1}')
 	ipp2=$(echo -e "${ipaddr}" | awk -F"/" '{print $NF}')
 	if ! isipaddr "${ipp1}" || ! is_between "${ipp2}" 0 32; then
@@ -456,9 +460,8 @@ setup_agentcfg() {
 		agentform=$( ${DIALOG} --title "Agent Settings" \
 				--cancel-label "Exit" \
 				--form "Parameter:" 10 60 0 \
-				"Controller:"    1 1 "" 1 12 32 0 \
-				"AuthKey   :"    2 1 "" 2 12 32 0 \
-				"Discovery :"    3 1 "" 3 12 32 0 \
+				"Controller :"    1 1 "" 1 12 32 0 \
+				"InstallCode:"    2 1 "" 2 12 32 0 \
 				2>&1 1>&3		
 			)
 		rc=$?
@@ -468,7 +471,7 @@ setup_agentcfg() {
 		agentform=( ${agentform} )
 		Controller="${agentform[0]}"; [ -z "${Controller}" ] && continue
 		AuthKey="${agentform[1]}"; [ -z "${AuthKey}" ] && continue
-		DiscoveryUrl="${agentform[2]}"; [ -z "${DiscoveryUrl}" ] && continue
+		DiscoveryUrl="http://${Controller%%:*}}:2379/v2/keys/discovery/hellocsphere"
 		break
 	done
 }
@@ -560,7 +563,7 @@ setup_inet() {
 			cfg=$(	${DIALOG} --title "SetUp ${inetdev}:" \
 					--ok-label "Save" --cancel-label "Discard" \
 					--form "Parameter:" 10 60 0 \
-					"IPAddres :"     1 1 "${now[0]}"  1 12 32 0 \
+					"IP/Mask  :"     1 1 "${now[0]}"  1 12 32 0 \
 					"Gateway  :"     2 1 "${now[1]}"  2 12 32 0 \
 					"DnsMaster:"     3 1 "${now[2]}"  3 12 32 0 \
 					2>&1 1>&3
