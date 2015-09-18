@@ -88,14 +88,14 @@ EOF
 	cat <<EOF
 ${tmp}
 EOF
-	tmp=$(cat "${CLOUDINIT}/csphere-etcd2.service" 2>&-)
+	tmp=$(cat "${CLOUDINIT}"/csphere-{etcd2,etcd2-early}.service 2>&-)
 	tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
 	cat <<EOF
 ${tmp}
 EOF
 
 	## section write_files
-	tmp=$(cat "${CLOUDINIT}"/{write_files_br,write_files_csphere-prepare} 2>&-)
+	tmp=$(cat "${CLOUDINIT}"/{write_files_br,write_files_csphere-prepare,write_files_csphere-etcd2-early} 2>&-)
 	tmp=$(echo -e "${tmp}" | sed -e 's/^/  /')
 	cat <<EOF
 write_files:
@@ -109,11 +109,16 @@ EOF
 		cat <<EOF
 ${tmp}
 EOF
-		tmp=$(cat "${CLOUDINIT}/write_files_csphere-etcd2" 2>&-)
-		tmp=$(echo -e "${tmp}" | sed -e 's/^/  /')
-		tmp=$(echo -e "${tmp}" | sed -e 's/{ROLE}/controller/')
-cat <<EOF
-${tmp}
+		cat <<EOF
+  - path: /etc/csphere/csphere-etcd2.env
+    permissions: 0644
+    owner: root
+    content: |
+      ETCD_DATA_DIR=/var/lib/etcd2
+      ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+      ETCD_ADVERTISE_CLIENT_URLS=http://{LOCAL_IP}:2379
+      ETCD_LISTEN_PEER_URLS=http://{LOCAL_IP}:2380
+      ETCD_DEBUG=true
 EOF
 		cat <<EOF
   - path: /etc/csphere/csphere-controller.env
@@ -139,13 +144,18 @@ EOF
       AUTH_KEY=${AuthKey}
       DEBUG=true
 EOF
-		if !role_controller; then  # only agent
-                	tmp=$(cat "${CLOUDINIT}/write_files_csphere-etcd2" 2>&-)
-                	tmp=$(echo -e "${tmp}" | sed -e 's/^/  /')
-                	tmp=$(echo -e "${tmp}" | sed -e 's/{ROLE}/agent/')
-			tmp=$(echo -e "${tmp}" | sed -e 's/{ETCD_DISCOVERY_URL}/'${DiscoveryUrl}'/')
-cat <<EOF
-${tmp}
+		if !role_controller; then  # only for agent, we treat both as controller
+			cat <<EOF
+  - path: /etc/csphere/csphere-etcd2.env
+    permissions: 0644
+    owner: root
+    content: |
+      ETCD_DATA_DIR=/var/lib/etcd2
+      ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+      ETCD_ADVERTISE_CLIENT_URLS=http://{LOCAL_IP}:2379
+      ETCD_LISTEN_PEER_URLS=http://{LOCAL_IP}:2380
+      ETCD_DISCOVERY=${DiscoveryUrl}
+      ETCD_DEBUG=true
 EOF
 		fi
 	fi
