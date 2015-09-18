@@ -19,8 +19,8 @@ BUILDLST=(
 	"net-misc/ntp-4.2.8-r3"  "coreos-overlay/net-misc/ntp/ntp-4.2.8-r3" ""
 	"sys-apps/baselayout-3.0.14" "coreos-overlay/sys-apps/baselayout/baselayout-3.0.14" ""
 	"coreos-base/coreos-init-0.0.1-r108" "coreos-overlay/coreos-base/coreos-init/coreos-init-0.0.1-r108" "symlink-usr"
-	"app-emulation/docker-1.6.2"  "coreos-overlay/app-emulation/docker/docker-1.6.2" ""
 )
+# "app-emulation/docker-1.6.2"  "coreos-overlay/app-emulation/docker/docker-1.6.2" ""
 
 get_bindest() {
 	local d=$( awk -F"=" '(NF==2 && $1=="PKGDIR") \
@@ -62,19 +62,19 @@ build_package() {
 	fi
 	sudo ebuild --skip-manifest ${SRCDIR}${1}${SUFFIXEBD} "clean"
 	# if docker, we need some prepare work to do
-	if [[ ${1} =~ "docker" ]]; then
-		# build and install kernel first
-		sudo ln -sv /build/amd64-usr/bin/pwd /bin/pwd || /bin/true
-		sudo -E SYSROOT=/build/amd64-usr \
-		ROOT=/build/amd64-usr  \
-		ebuild --skip-manifest \
-		 ../third_party/coreos-overlay/sys-kernel/coreos-kernel/coreos-kernel-4.0.5.ebuild \
-		install
-		# build our docker
-		sudo -E SYSROOT=/build/amd64-usr \
-		ebuild --skip-manifest ${SRCDIR}${1}${SUFFIXEBD} "package"
-		return $?
-	fi
+#	if [[ ${1} =~ "docker" ]]; then
+#		# build and install kernel first
+#		sudo ln -sv /build/amd64-usr/bin/pwd /bin/pwd || /bin/true
+#		sudo -E SYSROOT=/build/amd64-usr \
+#		ROOT=/build/amd64-usr  \
+#		ebuild --skip-manifest \
+#		 ../third_party/coreos-overlay/sys-kernel/coreos-kernel/coreos-kernel-4.0.5.ebuild \
+#		install
+#		# build our docker
+#		sudo -E SYSROOT=/build/amd64-usr \
+#		ebuild --skip-manifest ${SRCDIR}${1}${SUFFIXEBD} "package"
+#		return $?
+#	fi
 	# build our package
 	sudo ebuild --skip-manifest ${SRCDIR}${1}${SUFFIXEBD} "package"
 }
