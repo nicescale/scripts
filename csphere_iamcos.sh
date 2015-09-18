@@ -53,7 +53,7 @@ seekcpvf() {
 
 updatecpvf() {
 	local ln=$1 fname=$2 fvalue=$3
-	sed -i ''${ln}'c'"${fname}"': '"${fvalue}"'' ${BINPACKAGESF}
+	sudo sed -i ''${ln}'c'"${fname}"': '"${fvalue}"'' ${BINPACKAGESF}
 }
 
 build_package() {
