@@ -154,7 +154,7 @@ EOF
       AUTH_KEY=${AuthKey}
       DEBUG=true
 EOF
-		if !role_controller; then  # only for agent, we treat both as controller
+		if ! role_controller; then  # only for agent, we treat both as controller
 			cat <<EOF
   - path: /etc/csphere/csphere-etcd2.env
     permissions: 0644
