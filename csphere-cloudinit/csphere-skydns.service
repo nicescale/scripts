@@ -8,7 +8,7 @@
     
     [Service]
     User=root
-    ExecStart=/bin/skydns -verbose -addr=127.0.0.1:53 -domain="csphere.local." -machines=127.0.0.1:2379
+    ExecStart=/bin/skydns -verbose -addr=0.0.0.0:53 -domain="csphere.local." -machines=127.0.0.1:2379
 
     [Install]
     WantedBy=multi-user.target
