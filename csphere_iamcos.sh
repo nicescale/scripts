@@ -61,6 +61,21 @@ build_package() {
 		echo "USE=\"${2}\"" | sudo tee ${FMAKECONFUSER} >/dev/null
 	fi
 	sudo ebuild --skip-manifest ${SRCDIR}${1}${SUFFIXEBD} "clean"
+	# if docker, we need some prepare work to do
+	if [[ ${1} =~ "docker" ]]; then
+		# build and install kernel first
+		sudo ln -sv /build/amd64-usr/bin/pwd /bin/pwd
+		sudo -E SYSROOT=/build/amd64-usr \
+		ROOT=/build/amd64-usr  \
+		ebuild --skip-manifest \
+		 ../third_party/coreos-overlay/sys-kernel/coreos-kernel/coreos-kernel-4.0.5.ebuild \
+		install
+		# build our docker
+		sudo -E SYSROOT=/build/amd64-usr \
+		ebuild --skip-manifest ${SRCDIR}${1}${SUFFIXEBD} "package"
+		return $?
+	fi
+	# build our package
 	sudo ebuild --skip-manifest ${SRCDIR}${1}${SUFFIXEBD} "package"
 }
 
