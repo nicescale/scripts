@@ -322,6 +322,7 @@ get_inetcfg() {
 	ip=$( ip -d -o -f inet -4 -s addr 2>&- | awk '($2=="'${inet}'"){print $4;exit;}' )
 	gateway=$( route -n 2>&- | awk '($1=="0.0.0.0" && $4~/UG/){print $2;exit;}' )
 	dns=$( awk '(NF==2 && $1=="nameserver"){print $2;exit}' /etc/resolv.conf 2>&- )
+	[ -z "${dns}" ] && dns="${gateway}"
 	if [ -n "${ip}" -a -n "${gateway}" -a -n "${dns}" ]; then
 		echo -e "${ip}" "${gateway}" "${dns}"
 	fi

@@ -6,6 +6,7 @@
     Description=Csphere Network Config
     After=systemd-networkd-wait-online.service
     Wants=systemd-networkd-wait-online.service
+    Before=docker.service
 
     [Service]
     User=root
