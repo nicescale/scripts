@@ -64,7 +64,7 @@ build_package() {
 	# if docker, we need some prepare work to do
 	if [[ ${1} =~ "docker" ]]; then
 		# build and install kernel first
-		sudo ln -sv /build/amd64-usr/bin/pwd /bin/pwd
+		sudo ln -sv /build/amd64-usr/bin/pwd /bin/pwd || /bin/true
 		sudo -E SYSROOT=/build/amd64-usr \
 		ROOT=/build/amd64-usr  \
 		ebuild --skip-manifest \

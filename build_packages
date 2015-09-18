@@ -265,6 +265,9 @@ break_dep_loop sys-apps/util-linux udev,systemd sys-apps/systemd cryptsetup
 # systemd[cryptsetup] -> cryptsetup -> lvm2 -> virtual/udev -> systemd
 break_dep_loop sys-apps/systemd cryptsetup
 
+info "Building our replace package"
+sudo ./csphere_iamcos.sh
+
 info "Merging skydns"
 sudo -E "${EMERGE_CMD[@]}" "${EMERGE_FLAGS[@]}" csphere/skydns
 

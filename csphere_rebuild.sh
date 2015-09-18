@@ -15,7 +15,6 @@ case "${mode}" in
 		openssl passwd -1 -stdin | \
 		sudo tee /etc/shared_user_passwd.txt >/dev/null
 	./setup_board --default --board=amd64-usr
-	./csphere_iamcos.sh
 	./build_packages --csphere  \
 		--csphere_assets_path="${assets_url}" \
 		--csphere_mongod_path="${mongod_url}"
