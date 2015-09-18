@@ -19,6 +19,7 @@ Role=
 Controller=
 ControllerPort=
 AuthKey=
+DiscoveryUrl=
 
 gen_cloudconfig() {
 	local tmp=
@@ -82,6 +83,11 @@ EOF
 	cat <<EOF
 ${tmp}
 EOF
+	tmp=$(cat "${CLOUDINIT}/csphere-etcd2.service" 2>&-)
+	tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
+	cat <<EOF
+${tmp}
+EOF
 
 	## section write_files
 	tmp=$(cat "${CLOUDINIT}"/{write_files_br,write_files_csphere-prepare} 2>&-)
@@ -96,6 +102,12 @@ EOF
 		tmp=$(echo -e "${tmp}" | sed -e 's/{CSPHERE_AUTH_KEY}/'${AuthKey}'/')
 		tmp=$(echo -e "${tmp}" | sed -e 's/{CSPHERE_CONTROLLER_PORT}/'${ControllerPort}'/')
 		cat <<EOF
+${tmp}
+EOF
+		tmp=$(cat "${CLOUDINIT}/write_files_csphere-etcd2" 2>&-)
+		tmp=$(echo -e "${tmp}" | sed -e 's/^/  /')
+		tmp=$(echo -e "${tmp}" | sed -e 's/{ROLE}/controller/')
+cat <<EOF
 ${tmp}
 EOF
 		cat <<EOF
@@ -122,6 +134,15 @@ EOF
       AUTH_KEY=${AuthKey}
       DEBUG=true
 EOF
+		if !role_controller; then  # only agent
+                	tmp=$(cat "${CLOUDINIT}/write_files_csphere-etcd2" 2>&-)
+                	tmp=$(echo -e "${tmp}" | sed -e 's/^/  /')
+                	tmp=$(echo -e "${tmp}" | sed -e 's/{ROLE}/agent/')
+			tmp=$(echo -e "${tmp}" | sed -e 's/{ETCD_DISCOVERY_URL}/'${DiscoveryUrl}'/')
+cat <<EOF
+${tmp}
+EOF
+		fi
 	fi
 }
 
@@ -401,7 +422,7 @@ setup_contrcfg() {
 	fi
 }
 
-# if only agent, setup controller-url / authkey
+# if only agent, setup controller-url / authkey  / discoveryurl
 setup_agentcfg() {
 	local agentform=
 	local rc=
@@ -412,6 +433,7 @@ setup_agentcfg() {
 				--form "Parameter:" 10 60 0 \
 				"Controller:"    1 1 "" 1 12 32 0 \
 				"AuthKey   :"    2 1 "" 2 12 32 0 \
+				"Discovery :"    3 1 "" 3 12 32 0 \
 				2>&1 1>&3		
 			)
 		rc=$?
@@ -421,6 +443,7 @@ setup_agentcfg() {
 		agentform=( ${agentform} )
 		Controller="${agentform[0]}"; [ -z "${Controller}" ] && continue
 		AuthKey="${agentform[1]}"; [ -z "${AuthKey}" ] && continue
+		DiscoveryUrl="${agentform[2]}"; [ -z "${DiscoveryUrl}" ] && continue
 		break
 	done
 }
@@ -608,7 +631,7 @@ setup_role
 if role_controller; then			# controller, setup AuthKey/ControllerPort 
 	setup_contrcfg				# if both, setup Controller
 fi
-if ! role_controller && role_agent; then       # only agent, setup Controller/AuthKey
+if ! role_controller && role_agent; then       # only agent, setup Controller/AuthKey/DiscoveryUrl
 	setup_agentcfg
 fi
 setup_system

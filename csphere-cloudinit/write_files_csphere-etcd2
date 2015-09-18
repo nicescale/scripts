@@ -1,0 +1,29 @@
+- path: /etc/csphere/csphere-etcd2.sh
+  permissions: 0744
+  owner: root
+  content: |
+    #!/bin/sh
+    set -ex
+    role="{ROLE}"
+    discovery="{ETCD_DISCOVERY_URL}"
+    listen="0.0.0.0"
+    ipaddr="$( ifconfig $(lshw -short -class network 2>&- | awk '($1~/^\//){print $2;exit}') | awk '($1=="inet"){print $2;exit}' )"
+    if [ "${role}" == "agent" ]; then
+        /bin/etcd2 --listen-client-urls="http://${listen}:2379" -advertise-client-urls="http://${ipaddr}:2379" -initial-advertise-peer-urls="http://${ipaddr}:2380" -listen-peer-urls="http://${ipaddr}:2380"  -discovery="${discovery}"
+    elsif [ "${role}" == "controller" ]; then
+        /bin/etcd2 --listen-client-urls="http://${listen}:2379" -advertise-client-urls="http://${ipaddr}:2379" -initial-advertise-peer-urls="http://${ipaddr}:2380" -listen-peer-urls="http://${ipaddr}:2380"
+        sleep 1s
+        tokenf="/etc/.csphere-etc2.token.url"
+        if [ -f "${tokenf}" -a -s "${tokenf}" ]; then
+            :
+        else
+            token=$(head -n 100 /dev/urandom|tr -dc 'a-z0-9'|head -c 40)
+            sizen=3
+            url="http://localhost:2379/v2/keys/discovery/${token}"
+            curl -X PUT "${url}/_config/size" -d value=${sizen}
+            echo -e "${url}" > "${tokenf}"
+        fi
+    else
+        echo "role={role} invalid" 
+        /bin/false
+    fi

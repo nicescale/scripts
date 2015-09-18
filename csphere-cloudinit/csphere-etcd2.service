@@ -1,0 +1,16 @@
+- name: csphere-etcd2.service
+  command: start
+  enable: true
+  content: |
+    [Unit]
+    Description=Csphere Etcd2 Service
+    After=systemd-networkd-wait-online.service
+    Wants=systemd-networkd-wait-online.service
+
+    [Service]
+    User=root
+    Type=oneshot
+    ExecStart=/etc/csphere/csphere-etcd2.sh
+
+    [Install]
+    WantedBy=multi-user.target
