@@ -151,7 +151,7 @@ EOF
     content: |
       ROLE=agent
       CONTROLLER_ADDR=${Controller}
-      LOCAL_ADDR={LOCAL_IP}
+      DNS_ADDR={LOCAL_IP}
       AUTH_KEY=${AuthKey}
       DEBUG=true
 EOF
