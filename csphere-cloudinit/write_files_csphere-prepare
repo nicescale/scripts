@@ -23,6 +23,10 @@
         /bin/true
     fi
 
+    if [ ! -e /etc/mime.types ]; then
+        /usr/bin/ln -sv /usr/lib/csphere/etc/mime.types /etc/mime.types
+    fi
+
     if [ -s /etc/csphere/csphere-agent.env ]; then
         ipaddr="$( ifconfig $(lshw -short -class network 2>&- |\
                     awk '($1~/^\//){print $2;exit}') |\
