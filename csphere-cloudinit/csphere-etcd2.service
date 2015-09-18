@@ -5,18 +5,17 @@
     [Unit]
     Description=Csphere Etcd2 Service
     After=systemd-networkd-wait-online.service
+    After=csphere-etcd2-early.service
     Wants=systemd-networkd-wait-online.service
+    Wants=csphere-etcd2-early.service
 
     [Service]
     User=root
-    # REMOVE ME
-    Type=oneshot
-    Environment=ETCD_DATA_DIR=/var/lib/etcd2
-    ExecStart=/etc/csphere/csphere-etcd2.sh
-    # USE THIS
-    # Restart=always
-    # RestartSec=10s
-    # LimitNOFILE=40000
+    EnvironmentFile=/etc/csphere/csphere-etcd2.env
+    ExecStart=/bin/etcd2
+    Restart=always
+    RestartSec=10s
+    LimitNOFILE=40000
 
     [Install]
     WantedBy=multi-user.target
