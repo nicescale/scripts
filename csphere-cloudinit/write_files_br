@@ -33,4 +33,6 @@
        dev=br${card}
     done
     route add default gw $gw $dev || true
-    echo -e "BRIDGE=${dev}" >> ${dockerenv}
+    if [ -n "${dev}" ]; then
+        echo -e "BRIDGE=${dev}" > ${dockerenv}
+    fi
