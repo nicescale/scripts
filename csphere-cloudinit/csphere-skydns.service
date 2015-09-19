@@ -5,10 +5,11 @@
     [Unit]
     Description=Csphere SkyDns Service
     After=csphere-etcd2.service
+    Requires=csphere-etcd2.service
     
     [Service]
     User=root
-    ExecStartPre=/bin/sleep 1s
+    ExecStartPre=/bin/sleep 5s
     ExecStartPre=/bin/etcdctl set /skydns/config '{"domain":"csphere.local.","dns_addr":"0.0.0.0:53"}'
     ExecStart=/bin/skydns -verbose -addr=0.0.0.0:53 -domain="csphere.local." -machines=http://127.0.0.1:2379
     Restart=always
