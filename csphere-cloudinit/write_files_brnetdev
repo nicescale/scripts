@@ -1,0 +1,7 @@
+- path: /etc/systemd/network/br0.netdev
+  permissions: 0644
+  owner: root
+  content: |
+    [NetDev]
+    Name=br0
+    Kind=bridge

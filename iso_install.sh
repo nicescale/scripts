@@ -88,11 +88,6 @@ EOF
 	cat <<EOF
 ${tmp}
 EOF
-	tmp=$(cat "${CLOUDINIT}/network-custom.service" 2>&-)
-	tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
-	cat <<EOF
-${tmp}
-EOF
 	tmp=$(cat "${CLOUDINIT}"/csphere-{etcd2,etcd2-early}.service 2>&-)
 	tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
 	cat <<EOF
@@ -100,7 +95,7 @@ ${tmp}
 EOF
 
 	## section write_files
-	tmp=$(cat "${CLOUDINIT}"/{write_files_br,write_files_csphere-prepare,write_files_csphere-etcd2-early} 2>&-)
+	tmp=$(cat "${CLOUDINIT}"/{write_files_csphere-prepare,write_files_csphere-etcd2-early,write_files_brnetdev} 2>&-)
 	tmp=$(echo -e "${tmp}" | sed -e 's/^/  /')
 	cat <<EOF
 write_files:
@@ -176,16 +171,26 @@ EOF
 gen_network_cloudconfig(){
 	local inet="$1" cfg="$2"
 	cat << EOF
-- name: ${inet}-static.network
+- name: br0-static.network
   content : |
     [Match]
-    Name=${inet}
+    Name=br0
 
 EOF
 	local tmp=$( parse_inetcfg "${cfg}" ) 
 	tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
 	cat << EOF
 ${tmp}
+EOF
+
+	cat << EOF
+- name: br0-slave-${inet}.network
+  content : |
+    [Match]
+    Name=${inet}
+
+    [Network]
+    Bridge=br0
 EOF
 }
 
