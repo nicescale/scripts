@@ -16,12 +16,21 @@
        ip=$(ifconfig $card |grep -w 'inet' |awk '{print $2}')
        mask=$(ifconfig $card |grep -w 'inet' |awk '{print $4}')
        echo "got $card,  ip: $ip , mask: $mask"
-       brctl  addbr  br${card}
-       brctl  addif  br${card}  ${card}
-       ip addr  flush dev   $card
-       ifconfig  br${card}  $ip  netmask $mask
+       if [ -n "${ip}" -a -n "${mask}" ]; then
+           if ! (brctl show | grep -q "br${card}"); then
+               brctl  addbr  br${card}
+               brctl  addif  br${card}  ${card}
+               ip addr  flush dev   $card
+               ifconfig  br${card}  $ip  netmask $mask
+           else
+               echo "bridge br${card} already exists, do nothing"
+           fi
+       else
+           echo "ip or mask null, skip"
+           continue
+       fi
        # remove me, use last interface bridge, will fix it later
        dev=br${card}
     done
-    route add default gw $gw $dev
+    route add default gw $gw $dev || true
     echo -e "BRIDGE=${dev}" >> ${dockerenv}
