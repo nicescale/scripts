@@ -9,7 +9,7 @@
     [Service]
     User=root
     ExecStartPre=/bin/etcdctl set /skydns/config '{"domain":"csphere.local.","dns_addr":"0.0.0.0:53"}'
-    ExecStart=/bin/skydns -verbose -addr=0.0.0.0:53 -domain="csphere.local." -machines=127.0.0.1:2379
+    ExecStart=/bin/skydns -verbose -addr=0.0.0.0:53 -domain="csphere.local." -machines=http://127.0.0.1:2379
 
     [Install]
     WantedBy=multi-user.target
