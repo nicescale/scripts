@@ -5,8 +5,8 @@
     [Unit]
     Description=Csphere Controller Service
     After=csphere-prometheus.service csphere-mongodb.service
-    Requires=csphere-prepare.service
-    Requires=csphere-etcd2.service
+    Requires=csphere-prepare.service csphere-etcd2.service
+    After=csphere-prepare.service csphere-etcd2.service
 
     [Service]
     User=root
