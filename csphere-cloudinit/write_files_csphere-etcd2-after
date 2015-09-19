@@ -10,7 +10,7 @@
     else
         # token=$(head -n 100 /dev/urandom|tr -dc 'a-z0-9'|head -c 40) 
         token="hellocsphere"
-        sizen=3
+        sizen=1
         url="http://localhost:2379/v2/keys/discovery/${token}"
         sleep 3s
         curl -X PUT "${url}/_config/size" -d value=${sizen}
