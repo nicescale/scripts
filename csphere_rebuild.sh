@@ -3,6 +3,8 @@ set -e
 
 assets_url="http://tsing:e0cab9e41247ec200b7eb6ec5cb159ec@ci.csphe.re/job/csphere-fe/lastSuccessfulBuild/artifact/dist/assets-0.14.tgz"
 mongod_url="http://192.157.213.209/mongo-3.0.3/mongo-3.0.3.tgz"
+registry_url="http://ota.eyou.net:8080/emts.repo/registry.img"
+
 
 # remout /website
 sudo mount -o remount,rw /website
@@ -18,7 +20,8 @@ case "${mode}" in
 	./csphere_iamcos.sh
 	./build_packages --csphere  \
 		--csphere_assets_path="${assets_url}" \
-		--csphere_mongod_path="${mongod_url}"
+		--csphere_mongod_path="${mongod_url}" \
+		--csphere_registry_path="${registry_url}"
 		# --reuse_pkgs_from_local_boards \  # this flag is abondoned
 		# --nogetbinpkg  # directely use built binary to save time
 	./build_image prod
