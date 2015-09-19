@@ -43,4 +43,5 @@
             exit 1
        fi
        sed -i 's/{LOCAL_IP}/'"$ipaddr"'/g' /etc/csphere/csphere-agent.env
+       exit $?
     fi

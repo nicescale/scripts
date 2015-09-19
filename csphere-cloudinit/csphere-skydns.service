@@ -4,7 +4,7 @@
   content: |
     [Unit]
     Description=Csphere SkyDns Service
-    Requires=csphere-etcd2.service
+    After=csphere-etcd2.service
     
     [Service]
     User=root
