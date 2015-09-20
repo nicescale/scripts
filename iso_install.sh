@@ -69,6 +69,7 @@ EOF
 		cat <<EOF
 ${tmp}
 EOF
+		# we use original docker if controller or both
 		tmp=$(cat "${CLOUDINIT}/csphere-docker.service" 2>&-)
 		tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
 		tmp=$( echo -e "${tmp}" | \
@@ -98,14 +99,16 @@ EOF
 		cat <<EOF
 ${tmp}
 EOF
-		tmp=$(cat "${CLOUDINIT}/csphere-docker.service" 2>&-)
-		tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
-		tmp=$( echo -e "${tmp}" | \
-			sed -e 's#{EXECSTART}#/usr/bin/docker daemon -b br0#'
-			)
-		cat <<EOF
+		if ! role_controller; then  # if only agent, we use our ipam docker
+			tmp=$(cat "${CLOUDINIT}/csphere-docker.service" 2>&-)
+			tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
+			tmp=$( echo -e "${tmp}" | \
+				sed -e 's#{EXECSTART}#/usr/bin/docker daemon -b br0#'
+				)
+			cat <<EOF
 ${tmp}
 EOF
+		fi
 	fi
 	# install following service whatever
 	tmp=$(cat "${CLOUDINIT}/csphere-prepare.service" 2>&-)
