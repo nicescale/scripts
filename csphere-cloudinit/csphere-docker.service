@@ -6,7 +6,6 @@
     Description=Csphere Docker Engine Service
     Documentation=http://docs.docker.com
     After=docker.socket network.target
-    Requires=docker.socket
     Requires=csphere-etcd2.service
     After=csphere-etcd2.service
     Conflicts=docker.service
