@@ -69,6 +69,18 @@ EOF
 		cat <<EOF
 ${tmp}
 EOF
+		tmp=$(cat "${CLOUDINIT}/csphere-docker.service" 2>&-)
+		tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
+		tmp=$( echo -e "${tmp}" | \
+			sed -e 's#{EXECSTART}#/usr/bin/docker daemon#' | \
+			sed -e '/Requires=csphere-etcd2.service/d' | \
+			sed -e '/After=csphere-etcd2.service/d' | \
+			sed -e '/Environment=KV_PROVIDER=etcd/d' | \
+			sed -e '/Environment=KV_URL=127.0.0.1:2379/d' 
+			)
+		cat <<EOF
+${tmp}
+EOF
 	fi
 	if role_agent; then
 		tmp=$(cat "${CLOUDINIT}/csphere-agent.service" 2>&-)
@@ -86,6 +98,14 @@ EOF
 		cat <<EOF
 ${tmp}
 EOF
+		tmp=$(cat "${CLOUDINIT}/csphere-docker.service" 2>&-)
+		tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
+		tmp=$( echo -e "${tmp}" | \
+			sed -e 's#{EXECSTART}#/usr/bin/docker daemon -b br0#'
+			)
+		cat <<EOF
+${tmp}
+EOF
 	fi
 	# install following service whatever
 	tmp=$(cat "${CLOUDINIT}/csphere-prepare.service" 2>&-)
@@ -94,11 +114,6 @@ EOF
 ${tmp}
 EOF
 	tmp=$(cat "${CLOUDINIT}"/csphere-{etcd2,etcd2-early}.service 2>&-)
-	tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
-	cat <<EOF
-${tmp}
-EOF
-	tmp=$(cat "${CLOUDINIT}/csphere-docker.service" 2>&-)
 	tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
 	cat <<EOF
 ${tmp}
@@ -148,14 +163,6 @@ EOF
       DB_NAME=csphere
       LISTEN_ADDR=:${ControllerPort}
 EOF
-		cat <<EOF
-  - path: /etc/csphere/csphere_docker.env
-    permissions: 0644
-    owner: root
-    content: |
-      DOCKER_ARG1=
-      DOCKER_ARG2=
-EOF
 	fi
 	if role_agent; then
 		cat <<EOF
@@ -182,14 +189,6 @@ EOF
       ETCD_LISTEN_PEER_URLS=http://{LOCAL_IP}:2380
       ETCD_DISCOVERY=${DiscoveryUrl}
       ETCD_DEBUG=true
-EOF
-			cat <<EOF
-  - path: /etc/csphere/csphere_docker.env
-    permissions: 0644
-    owner: root
-    content: |
-      DOCKER_ARG1=-b
-      DOCKER_ARG2=br0
 EOF
 		fi
 	fi
