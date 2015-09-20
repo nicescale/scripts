@@ -73,7 +73,7 @@ EOF
 		tmp=$(cat "${CLOUDINIT}/csphere-docker.service" 2>&-)
 		tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
 		tmp=$( echo -e "${tmp}" | \
-			sed -e 's#{EXECSTART}#/usr/bin/docker daemon#' | \
+			sed -e 's#{EXECSTART}#/usr/bin/docker daemon --storage-driver=overlay#' | \
 			sed -e '/Requires=csphere-etcd2.service/d' | \
 			sed -e '/After=csphere-etcd2.service/d' | \
 			sed -e '/Environment=KV_PROVIDER=etcd/d' | \
@@ -103,7 +103,7 @@ EOF
 			tmp=$(cat "${CLOUDINIT}/csphere-docker.service" 2>&-)
 			tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
 			tmp=$( echo -e "${tmp}" | \
-				sed -e 's#{EXECSTART}#/usr/bin/docker daemon -b br0#'
+				sed -e 's#{EXECSTART}#/usr/bin/docker daemon -b br0 --storage-driver=overlay#'
 				)
 			cat <<EOF
 ${tmp}
