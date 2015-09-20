@@ -44,9 +44,6 @@ EOF
 		cat <<EOF
 coreos:
   units:
-    - name: docker.service
-      command: start
-      enable: true
 ${tmp}
 EOF
 		coreos_units=1
@@ -55,9 +52,6 @@ EOF
 		cat <<EOF
 coreos:
   units:
-    - name: docker.service
-      command: start
-      enable: true
 EOF
 	fi
 	if role_controller; then
@@ -89,6 +83,7 @@ EOF
 ${tmp}
 EOF
 	fi
+	# install following service whatever
 	tmp=$(cat "${CLOUDINIT}/csphere-prepare.service" 2>&-)
 	tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
 	cat <<EOF
@@ -99,9 +94,15 @@ EOF
 	cat <<EOF
 ${tmp}
 EOF
+	tmp=$(cat "${CLOUDINIT}/csphere-docker.service" 2>&-)
+	tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
+	cat <<EOF
+${tmp}
+EOF
 
 	## section write_files
-	tmp=$(cat "${CLOUDINIT}"/{write_files_csphere-prepare,write_files_csphere-etcd2-early,write_files_brnetdev} 2>&-)
+	# install following three files whatever
+	tmp=$(cat "${CLOUDINIT}"/write_files_{csphere-prepare,csphere-etcd2-early,brnetdev} 2>&-)
 	tmp=$(echo -e "${tmp}" | sed -e 's/^/  /')
 	cat <<EOF
 write_files:
@@ -143,6 +144,14 @@ EOF
       DB_NAME=csphere
       LISTEN_ADDR=:${ControllerPort}
 EOF
+		cat <<EOF
+  - path: /etc/csphere/csphere_docker.env
+    permissions: 0644
+    owner: root
+    content: |
+      DOCKER_ARG1=
+      DOCKER_ARG2=
+EOF
 	fi
 	if role_agent; then
 		cat <<EOF
@@ -169,6 +178,14 @@ EOF
       ETCD_LISTEN_PEER_URLS=http://{LOCAL_IP}:2380
       ETCD_DISCOVERY=${DiscoveryUrl}
       ETCD_DEBUG=true
+EOF
+			cat <<EOF
+  - path: /etc/csphere/csphere_docker.env
+    permissions: 0644
+    owner: root
+    content: |
+      DOCKER_ARG1=-b
+      DOCKER_ARG2=br0
 EOF
 		fi
 	fi
