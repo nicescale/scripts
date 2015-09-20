@@ -8,11 +8,12 @@
     Requires=csphere-skydns.service
     Requires=csphere-etcd2.service
     After=csphere-prepare.service csphere-skydns.service csphere-etcd2.service
+    After=csphere-docker.service
 
     [Service]
     EnvironmentFile=/etc/csphere/csphere-agent.env
     User=root
-    ExecStartPre=/bin/sleep 1s
+    ExecStartPre=/bin/sleep 3s
     ExecStart=/bin/csphere --tls join
     Restart=always
     RestartSec=3
