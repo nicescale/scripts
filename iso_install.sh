@@ -44,6 +44,8 @@ EOF
 		cat <<EOF
 coreos:
   units:
+    - name: docker.service
+      enable: false
 ${tmp}
 EOF
 		coreos_units=1
@@ -52,6 +54,8 @@ EOF
 		cat <<EOF
 coreos:
   units:
+    - name: docker.service
+      enable: false
 EOF
 	fi
 	if role_controller; then
