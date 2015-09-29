@@ -705,4 +705,5 @@ setup_inet
 prog_inst
 cloudinit
 bye
+eject
 reboot
