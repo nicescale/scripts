@@ -34,6 +34,9 @@ users:
     groups:
       - sudo
       - docker
+      - wheel
+      - systemd-journal
+      - portage
 EOF
 
 	## section coreos
