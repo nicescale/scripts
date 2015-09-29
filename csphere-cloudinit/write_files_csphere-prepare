@@ -27,6 +27,15 @@
         /usr/bin/ln -sv /usr/lib/csphere/etc/mime.types /etc/mime.types
     fi
 
+    if [ "$(brctl show br0 2>&- | awk '($1=="br0" && NF==4){print "yes"}')" == "yes" ]; then
+         ifconfig br0 promisc
+         br0inet="$(brctl show br0 2>&- | awk '($1=="br0" && NF==4){print $NF}')"
+         br0inetmac="$(ifconfig "${br0inet}" | awk '(/\<ether\>/){print $2}')
+         if [ -n "${br0inetmac}" ]; then
+             ifconfig br0 hw ether "${br0inetmac}"
+         fi
+    fi
+
     if [ -s /etc/csphere/csphere-agent.env ]; then
         ipaddr="$( ifconfig $(lshw -short -class network 2>&- |\
                     awk '($1~/^\//){print $2;exit}') |\
@@ -44,13 +53,4 @@
        fi
        sed -i 's/{LOCAL_IP}/'"$ipaddr"'/g' /etc/csphere/csphere-agent.env
        exit $?
-    fi
-
-    if [ "$(brctl show br0 2>&- | awk '($1=="br0" && NF==4){print "yes"}')" == "yes" ]; then
-         ifconfig br0 promisc
-         br0inet="$(brctl show br0 2>&- | awk '($1=="br0" && NF==4){print $NF}')"
-         br0inetmac="$(ifconfig "${br0inet}" | awk '(/\<ether\>/){print $2}')
-         if [ -n "${br0inetmac}" ]; then
-             ifconfig br0 hw ether "${br0inetmac}"
-         fi
     fi
