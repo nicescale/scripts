@@ -20,6 +20,7 @@ Controller=
 ControllerPort=
 AuthKey=
 DiscoveryUrl=
+SvrPoolID=
 
 gen_cloudconfig() {
 	local tmp=
@@ -171,6 +172,10 @@ EOF
 EOF
 	fi
 	if role_agent; then
+		# if both, we setup env SVRPOOLID
+		if role_controller; then
+			SvrPoolID="csphere-internal"
+		fi
 		cat <<EOF
   - path: /etc/csphere/csphere-agent.env
     permissions: 0644
@@ -181,6 +186,7 @@ EOF
       DNS_ADDR={LOCAL_IP}
       AUTH_KEY=${AuthKey}
       DEBUG=true
+      SVRPOOLID=${SvrPoolID}
 EOF
 		if ! role_controller; then  # only for agent, we treat both as controller
 			cat <<EOF
