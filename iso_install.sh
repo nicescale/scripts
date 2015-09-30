@@ -3,7 +3,7 @@
 BASEDIR="$(cd $(dirname $0); pwd)"
 CLOUDINIT="${BASEDIR}/csphere-cloudinit"
 DIALOGBIN="/usr/share/oem/bin/dialog"
-BACKTITLE="Installation"
+BACKTITLE="COS_Installation"
 DIALOG="${DIALOGBIN} --backtitle ${BACKTITLE} "
 TMPFILE="$(mktemp)"
 TMPINET="$(mktemp).inet"
@@ -419,7 +419,7 @@ welcome() {
 		sleep 1s
 	done
 	${DIALOG} --title "Welcome" \
-		--msgbox "Welcome to Installation Guid" 5 32
+		--msgbox "Welcome to COS Installation Guid" 5 36
 }
 
 # select block device
@@ -517,6 +517,13 @@ setup_agentcfg() {
 		agentform=( ${agentform} )
 		Controller="${agentform[0]}"; [ -z "${Controller}" ] && continue
 		AuthKey="${agentform[1]}"; [ -z "${AuthKey}" ] && continue
+		if ! ( echo -e "${Controller}" | grep -E -q "^.+:[1-9]+[0-9]*$" ); then
+			${DIALOG} --title "Check Invalid" \
+				--ok-label "Return"  \
+				--msgbox "Controller is invalid\nController should be like: Address:Port" \
+				6 48
+			continue
+		fi
 		DiscoveryUrl="http://${Controller%%:*}:2379/v2/keys/discovery/hellocsphere"
 		break
 	done
