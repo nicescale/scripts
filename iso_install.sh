@@ -524,6 +524,13 @@ setup_agentcfg() {
 				6 48
 			continue
 		fi
+		if ! ( echo -e "${AuthKey}" | grep -E -q "^[0-9]{4,4}$" ); then
+			${DIALOG} --title "Check Invalid" \
+				--ok-label "Return"  \
+				--msgbox "InstallCode is invalid\nInstallCode should be four numbers" \
+				6 48
+			continue
+		fi
 		DiscoveryUrl="http://${Controller%%:*}:2379/v2/keys/discovery/hellocsphere"
 		break
 	done
