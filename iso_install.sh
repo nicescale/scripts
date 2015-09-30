@@ -652,7 +652,12 @@ prog_inst() {
 	clean_mount ${MOUNTON}
 
 	(
-		progress 0 10 0.1 "mount cdrom ..." &
+		progress 0 5  0.1 "erase device magic ..." &
+		wipefs -f -a "${DEVICE}"
+		sleep 1
+		kill -10 $! >/dev/null 2>&1
+
+		progress 6 10 0.1 "mount cdrom ..." &
 		mount -o loop /dev/cdrom ${MOUNTON}
 		sleep 1
 		kill -10 $! >/dev/null 2>&1
@@ -673,6 +678,7 @@ prog_inst() {
 cloudinit() {
 	${DIALOG} --title "Almost Done" \
 		--infobox "Creating Cloud Config ... " 3 29
+	sleep 1
 	mkdir -p /mnt1
 	mount -t ext4 ${DEVICE}9 /mnt1
 	mkdir -p /mnt1/var/lib/coreos-install
@@ -689,7 +695,6 @@ cloudinit() {
 		20 70
 	cp "${TMPFILE}" /mnt1/var/lib/coreos-install/user_data
 	clean_mount /mnt1
-	sleep 1
 }
 
 bye() {
