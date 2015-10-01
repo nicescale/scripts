@@ -12,7 +12,7 @@
     [Service]
     User=root
     EnvironmentFile=/etc/csphere/csphere-etcd2.env
-    ExecStartPre=/bin/sleep 3s
+    ExecStartPre=/bin/sleep 5s
     ExecStart=/bin/etcd2
     Restart=always
     RestartSec=10s
