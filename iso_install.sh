@@ -1,5 +1,4 @@
 #!/bin/sh
-set -x
 
 BASEDIR="$(cd $(dirname $0); pwd)"
 CLOUDINIT="${BASEDIR}/csphere-cloudinit"
@@ -741,7 +740,7 @@ cloudinit() {
 	# remount cos partition / on /mnt1
 	mkdir -p /mnt1
 	mount -t ext4 ${DEVICE}9 /mnt1
-	if [ ! -d /mnt1/var/lib/docker ]; then
+	if [ ! -d /mnt1/var/lib/ ]; then
 		${DIALOG} --title "ERROR" \
 			--msgbox "ERROR: Re-Mount COS Root Partition!" 5 41
 		exit 1
