@@ -11,6 +11,7 @@ MOUNTON="/mnt"
 BLOCKDEV=()
 INETDEV=()
 DEVICE=
+CDROMDEV=
 
 HostName=$(mktemp -u XXXXXXXX)
 DefaultUser="cos"
@@ -373,6 +374,18 @@ get_inetcfg() {
 }
 # get_inetcfg eno16777736; get_inetcfg vethabeb0ea; exit 0
 
+# get cdrom device
+get_cddev() {
+	local cdromdev=$( blkid 2>&- | \
+		awk -F: '(/iso9660|CDROM/){print $1;exit}' )
+	if [ -b "${cdromdev}" -a -r "${cdromdev}" ]; then
+		echo "${cdromdev}"
+	else
+		echo ""
+	fi
+}
+
+
 clean_mount() {
 	if mountpoint  -q ${1} >/dev/null 2>&1; then
 		umount ${1}
@@ -410,6 +423,13 @@ if [ "$(id -u)" != "0" ]; then
 	exit 1
 fi
 
+# ensure cdrom device
+CDROMDEV="$(get_cddev)"
+if [ -z "${CDROMDEV}" ]; then
+	${DIALOG} --title "Note" \
+		--msgbox "CDROM Device Not Ready" 5 26
+	exit 1
+fi
 
 # welcome
 welcome() {
@@ -672,7 +692,7 @@ prog_inst() {
 		kill -10 $! >/dev/null 2>&1
 
 		progress 6 10 0.1 "mount cdrom ..." &
-		mount -o loop /dev/cdrom ${MOUNTON}
+		mount -o loop "${CDROMDEV}" ${MOUNTON}
 		sleep 1
 		kill -10 $! >/dev/null 2>&1
 
