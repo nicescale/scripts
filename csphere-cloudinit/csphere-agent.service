@@ -16,7 +16,7 @@
     ExecStartPre=/bin/sleep 3s
     ExecStart=/bin/csphere --tls join
     Restart=always
-    RestartSec=3
+    RestartSec=3s
 
     [Install]
     WantedBy=multi-user.target
