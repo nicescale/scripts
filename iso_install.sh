@@ -13,6 +13,8 @@ BLOCKDEV=()
 INETDEV=()
 DEVICE=
 CDROMDEV=
+STEPERR="/tmp/.step.err"
+INSTLOG="/tmp/cos-install.log"
 
 HostName=$(mktemp -u XXXXXXXX)
 DefaultUser="cos"
@@ -697,6 +699,8 @@ prog_inst() {
 		exit 1
 	fi
 
+	# write cos onto device bit by bit
+	# and calling ioctl() to re-read partition table
 	(
 		progress 0 95 0.4 "writing disk ..." &
 		bunzip2 -c  ${MOUNTON}/bzimage/cos_production_image.bin.bz2 > "${DEVICE}"
@@ -705,31 +709,53 @@ prog_inst() {
 	
 		progress 96 100 0.1 "updating partition table ..." &
 		blockdev --rereadpt "${DEVICE}" 2>&1
+		partprobe "${DEVICE}" 2>&1
 		sleep 1
 		kill -10 $! >/dev/null 2>&1
 	) | ${DIALOG} --gauge "Please Wait ..." 12 70 0
+
+	if [ ! -e "${DEVICE}9" ]; then
+		${DIALOG} --title "ERROR" \
+			--msgbox "ERROR on Installing COS To Device ${CDROMDEV}" 5 45
+		exit 1
+	fi
 }
 
 # creating cloud config 
 cloudinit() {
+	# create and verify cloud init config
 	${DIALOG} --title "Almost Done" \
 		--infobox "Creating Cloud Config ... " 3 29
 	sleep 1
-	mkdir -p /mnt1
-	mount -t ext4 ${DEVICE}9 /mnt1
-	mkdir -p /mnt1/var/lib/coreos-install
 	gen_cloudconfig > "${TMPFILE}"
 	if ! coreos-cloudinit -validate --from-file="${TMPFILE}" >/dev/null 2>&1;  then
 		${DIALOG} --title "ERROR" \
 			--msgbox "ERROR: Cloud Config Validation Error!" 5 41
-		clean_mount /mnt1
 		exit 1
 	fi
 	${DIALOG} --title "Confirm Cloud Config" \
 		--exit-label "Confirm" \
 		--textbox "${TMPFILE}" \
 		20 70
+
+	# remount cos partition / on /mnt1
+	mkdir -p /mnt1
+	mount -t ext4 ${DEVICE}9 /mnt1
+	if [ ! -d /mnt1/var/lib/docker ]; then
+		${DIALOG} --title "ERROR" \
+			--msgbox "ERROR: Re-Mount COS Root Partition!" 5 41
+		exit 1
+	fi
+	mkdir -p /mnt1/var/lib/coreos-install
+
+	# copy cloud init config as coreos-install/user_data
 	cp "${TMPFILE}" /mnt1/var/lib/coreos-install/user_data
+	if [ ! -s /mnt1/var/lib/coreos-install/user_data ]; then
+		${DIALOG} --title "ERROR" \
+			--msgbox "ERROR: Cloud Config Install Error!" 5 41
+		clean_mount /mnt1
+		exit 1
+	fi
 	clean_mount /mnt1
 }
 
