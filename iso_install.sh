@@ -1,4 +1,5 @@
 #!/bin/sh
+set -x
 
 BASEDIR="$(cd $(dirname $0); pwd)"
 CLOUDINIT="${BASEDIR}/csphere-cloudinit"
@@ -685,18 +686,19 @@ prog_inst() {
 
 	clean_mount ${MOUNTON}
 
+	${DIALOG} --title "Starting Preparation" \
+		--infobox "Preparing COS Installation ... " 3 35
+	wipefs -f -a "${DEVICE}"
+	mount -o loop "${CDROMDEV}" ${MOUNTON}
+	sleep 1
+	if [ ! -d ${MOUNTON}/bzimage/ ] ; then
+		${DIALOG} --title "ERROR" \
+			--msgbox "ERROR to Mount CDROM Device ${CDROMDEV}" 5 45
+		exit 1
+	fi
+
 	(
-		progress 0 5  0.1 "erase device magic ..." &
-		wipefs -f -a "${DEVICE}"
-		sleep 1
-		kill -10 $! >/dev/null 2>&1
-
-		progress 6 10 0.1 "mount cdrom ..." &
-		mount -o loop "${CDROMDEV}" ${MOUNTON}
-		sleep 1
-		kill -10 $! >/dev/null 2>&1
-
-		progress 11 95 0.4 "writing disk ..." &
+		progress 0 95 0.4 "writing disk ..." &
 		bunzip2 -c  ${MOUNTON}/bzimage/cos_production_image.bin.bz2 > "${DEVICE}"
 		sleep 1
 		kill -10 $! >/dev/null 2>&1
