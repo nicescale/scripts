@@ -83,6 +83,7 @@ EOF
 			sed -e 's#{EXECSTART}#/usr/bin/docker daemon --storage-driver=overlay#' | \
 			sed -e '/Requires=csphere-etcd2.service/d' | \
 			sed -e '/After=csphere-etcd2.service/d' | \
+			sed -e '/After=csphere-dockeripam.service/d' | \
 			sed -e '/Environment=KV_PROVIDER=etcd/d' | \
 			sed -e '/Environment=KV_URL=127.0.0.1:2379/d' 
 			)
@@ -106,12 +107,19 @@ EOF
 		cat <<EOF
 ${tmp}
 EOF
-		if ! role_controller; then  # if only agent, we use our ipam docker
+		if ! role_controller; then  # if only agent
+			# we use our ipam docker
 			tmp=$(cat "${CLOUDINIT}/csphere-docker.service" 2>&-)
 			tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
 			tmp=$( echo -e "${tmp}" | \
-				sed -e 's#{EXECSTART}#/usr/bin/docker daemon -b br0 --storage-driver=overlay#'
+				sed -e 's#{EXECSTART}#/usr/bin/docker daemon -b br0 --csphere --iptables=false --storage-driver=overlay#'
 				)
+			cat <<EOF
+${tmp}
+EOF
+			# and install csphere-dockeripam.service
+			tmp=$(cat "${CLOUDINIT}/csphere-dockeripam.service" 2>&- )
+			tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
 			cat <<EOF
 ${tmp}
 EOF

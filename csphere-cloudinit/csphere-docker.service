@@ -8,6 +8,7 @@
     After=network.target
     Requires=csphere-etcd2.service
     After=csphere-etcd2.service
+    After=csphere-dockeripam.service
     Conflicts=docker.service
 
     [Service]
