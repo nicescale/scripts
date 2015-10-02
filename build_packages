@@ -280,6 +280,9 @@ sudo -E "${EMERGE_CMD[@]}" "${EMERGE_FLAGS[@]}" csphere/go-bindata
 info "Merging prometheus"
 sudo -E "${EMERGE_CMD[@]}" "${EMERGE_FLAGS[@]}" csphere/prometheus
 
+info "Merging docker-ipam"
+sudo -E "${EMERGE_CMD[@]}" "${EMERGE_FLAGS[@]}" csphere/docker-ipam
+
 info "Merging csphere"
 sudo -E "${EMERGE_CMD[@]}" "${EMERGE_FLAGS[@]}" csphere/csphere
 

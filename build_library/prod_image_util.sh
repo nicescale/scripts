@@ -48,6 +48,7 @@ create_prod_image() {
   extract_prod_gcc "${root_fs_dir}"
   emerge_to_image "${root_fs_dir}" "${base_pkg}"
   emerge_to_image "${root_fs_dir}" "csphere/prometheus"
+  emerge_to_image "${root_fs_dir}" "csphere/docker-ipam"
   emerge_to_image "${root_fs_dir}" "csphere/csphere"
   emerge_to_image "${root_fs_dir}" "csphere/skydns"
   write_packages "${root_fs_dir}" "${BUILD_DIR}/${image_packages}"
