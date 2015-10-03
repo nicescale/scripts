@@ -52,5 +52,14 @@
             exit 1
        fi
        sed -i 's/{LOCAL_IP}/'"$ipaddr"'/g' /etc/csphere/csphere-agent.env
+
+       # if only agent, we setup DEFAULT_GW for csphere-docker
+       if [ ! -s  /etc/systemd/system/csphere-controller.service ]; then
+            defaultgw=$(route -n 2>&- |\
+                         awk '($1=="0.0.0.0" && $4~/UG/){print $2;exit;}' )
+            (
+             echo -e "DEFAULT_GW=${defaultgw}"
+            ) | tee /etc/csphere/csphere_docker.env
+       fi
        exit $?
     fi
