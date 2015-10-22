@@ -13,7 +13,7 @@
     [Service]
     EnvironmentFile=/etc/csphere/csphere-agent.env
     User=root
-    ExecStartPre=/bin/sleep 3s
+    ExecStartPre=/bin/sleep 10s
     ExecStart=/bin/csphere --tls join
     Restart=always
     RestartSec=3s
