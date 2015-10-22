@@ -61,5 +61,4 @@
              echo -e "DEFAULT_GW=${defaultgw}"
             ) | tee /etc/csphere/csphere_docker.env
        fi
-       exit $?
     fi
