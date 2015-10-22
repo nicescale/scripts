@@ -36,6 +36,11 @@
          fi
     fi
 
+    if [ -d /etc/coreos/ -a -w /etc/coreos/ ]; then
+        :
+        # echo -e "GROUP=developer\nREBOOT_STRATEGY=best-effort\nSERVER=http://upgrade.csphere.cn/update" > /etc/coreos/update.conf
+    fi
+
     if [ -s /etc/csphere/csphere-agent.env ]; then
         ipaddr="$( ifconfig $(lshw -short -class network 2>&- |\
                     awk '($1~/^\//){print $2;exit}') |\
