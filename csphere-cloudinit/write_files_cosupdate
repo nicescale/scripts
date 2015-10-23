@@ -1,7 +1,0 @@
-- path: /etc/coreos/update.conf
-  permissions: 0644
-  owner: root
-  content: |
-    GROUP=developer
-    REBOOT_STRATEGY=off
-    SERVER=http://upgrade.csphere.cn/update

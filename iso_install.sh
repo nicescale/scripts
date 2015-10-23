@@ -1,7 +1,7 @@
 #!/bin/sh
 
 BASEDIR="$(cd $(dirname $0); pwd)"
-CLOUDINIT="${BASEDIR}/csphere-cloudinit"
+# CLOUDINIT="${BASEDIR}/csphere-cloudinit"
 DIALOGBIN="/usr/share/oem/bin/dialog"
 BACKTITLE="COS_Installation"
 DIALOG="${DIALOGBIN} --backtitle ${BACKTITLE} "
@@ -28,7 +28,7 @@ SvrPoolID=
 gen_cloudconfig() {
 	local tmp=
 
-	## section hostname, users
+	## section hostname, users, coreos(units)
 	cat << EOF
 #cloud-config
 hostname: ${HostName}
@@ -41,180 +41,35 @@ users:
       - wheel
       - systemd-journal
       - portage
-EOF
-
-	## section coreos
-	local coreos_units=0
-	if [ -f "${TMPINET}" -a -s "${TMPINET}" ]; then
-		tmp=$(cat "${TMPINET}" 2>&-)
-		tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
-		cat <<EOF
 coreos:
-  units:
-    - name: docker.service
-      enable: false
-${tmp}
-EOF
-		coreos_units=1
-	fi
-	if [ "${coreos_units}" == "0" ]; then
-		cat <<EOF
-coreos:
+  update:
+    group: stable
+    reboot-strategy: off
+    server: http://upgrade.csphere.cn/update
   units:
     - name: docker.service
       enable: false
 EOF
-	fi
-	if role_controller; then
-		tmp=$(cat "${CLOUDINIT}"/csphere-{mongodb,prometheus,controller}.service 2>&-)
-		tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
-		cat <<EOF
-${tmp}
-EOF
-		tmp=$(cat "${CLOUDINIT}"/csphere-etcd2-after.service 2>&-)
-		tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
-		cat <<EOF
-${tmp}
-EOF
-		# we use original docker if controller or both
-		tmp=$(cat "${CLOUDINIT}/csphere-docker.service" 2>&-)
-		tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
-		tmp=$( echo -e "${tmp}" | \
-			sed -e 's#{EXECSTART}#/usr/bin/docker daemon --storage-driver=overlay#' | \
-			sed -e '/Requires=csphere-etcd2.service/d' | \
-			sed -e '/After=csphere-etcd2.service/d' | \
-			sed -e '/After=csphere-dockeripam.service/d' | \
-			sed -e '/Environment=KV_PROVIDER=etcd/d' | \
-			sed -e '/Environment=KV_URL=127.0.0.1:2379/d' 
-			)
-		cat <<EOF
-${tmp}
-EOF
-	fi
-	if role_agent; then
-		tmp=$(cat "${CLOUDINIT}/csphere-agent.service" 2>&-)
-		tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
-		if role_controller; then 	# add unit dependency if {both} for agent
-			tmp=$( echo -e "${tmp}" | \
-				sed -e "/^[ \t]*\[Unit\]/a\        After=csphere-controller.service"
-				)
-		fi
-		cat <<EOF
-${tmp}
-EOF
-		tmp=$(cat "${CLOUDINIT}/csphere-skydns.service" 2>&-)
-		tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
-		cat <<EOF
-${tmp}
-EOF
-		if ! role_controller; then  # if only agent
-			# we use our ipam docker
-			tmp=$(cat "${CLOUDINIT}/csphere-docker.service" 2>&-)
-			tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
-			tmp=$( echo -e "${tmp}" | \
-				sed -e 's#{EXECSTART}#/usr/bin/docker daemon -b br0 --csphere --iptables=false --ip-forward=false --default-gateway=${DEFAULT_GW} --storage-driver=overlay#'
-				)
-			cat <<EOF
-${tmp}
-EOF
-			# and install csphere-dockeripam.service
-			tmp=$(cat "${CLOUDINIT}/csphere-dockeripam.service" 2>&- )
-			tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
-			cat <<EOF
-${tmp}
-EOF
-		fi
-	fi
-	# install following service whatever
-	tmp=$(cat "${CLOUDINIT}/csphere-prepare.service" 2>&-)
+	# append inet config
+	tmp=$(cat "${TMPINET}" 2>&-)
 	tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
 	cat <<EOF
 ${tmp}
 EOF
-	tmp=$(cat "${CLOUDINIT}"/csphere-{etcd2,etcd2-early}.service 2>&-)
-	tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
-	cat <<EOF
-${tmp}
-EOF
-
-	## section write_files
-	# install following three files whatever
-	tmp=$(cat "${CLOUDINIT}"/write_files_{csphere-prepare,csphere-etcd2-early,brnetdev,cosupdate} 2>&-)
-	tmp=$(echo -e "${tmp}" | sed -e 's/^/  /')
+	# section write_files
 	cat <<EOF
 write_files:
-${tmp}
-EOF
-	if role_controller; then
-		tmp=$(cat "${CLOUDINIT}/write_files_prometheus" 2>&-)
-		tmp=$(echo -e "${tmp}" | sed -e 's/^/  /')
-		tmp=$(echo -e "${tmp}" | sed -e 's/{CSPHERE_AUTH_KEY}/'${AuthKey}'/')
-		tmp=$(echo -e "${tmp}" | sed -e 's/{CSPHERE_CONTROLLER_PORT}/'${ControllerPort}'/')
-		cat <<EOF
-${tmp}
-EOF
-		tmp=$(cat "${CLOUDINIT}/write_files_csphere-etcd2-after" 2>&-)
-		tmp=$(echo -e "${tmp}" | sed -e 's/^/  /')
-		cat <<EOF
-${tmp}
-EOF
-		cat <<EOF
-  - path: /etc/csphere/csphere-etcd2.env
+  - path: /etc/csphere/inst-opts.env
     permissions: 0644
     owner: root
     content: |
-      ETCD_DATA_DIR=/var/lib/etcd2
-      ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
-      ETCD_ADVERTISE_CLIENT_URLS=http://{LOCAL_IP}:2379
-      ETCD_LISTEN_PEER_URLS=http://{LOCAL_IP}:2380
-      ETCD_DEBUG=true
+      COS_ROLE=${Role}
+      COS_CONTROLLER=${Controller}
+      COS_CONTROLLER_PORT=${ControllerPort}
+      COS_AUTH_KEY=${AuthKey}
+      COS_DISCOVERY_URL=${DiscoveryUrl}
+      COS_SVRPOOL_ID=${SvrPoolID}
 EOF
-		cat <<EOF
-  - path: /etc/csphere/csphere-controller.env
-    permissions: 0644
-    owner: root
-    content: |
-      ROLE=controller
-      AUTH_KEY=${AuthKey}
-      DEBUG=true
-      DB_URL=mongodb://127.0.0.1:27017
-      DB_NAME=csphere
-      LISTEN_ADDR=:${ControllerPort}
-EOF
-	fi
-	if role_agent; then
-		# if both, we setup env SVRPOOLID
-		if role_controller; then
-			SvrPoolID="csphere-internal"
-		fi
-		cat <<EOF
-  - path: /etc/csphere/csphere-agent.env
-    permissions: 0644
-    owner: root
-    content: |
-      ROLE=agent
-      CONTROLLER_ADDR=${Controller}
-      DNS_ADDR={LOCAL_IP}
-      AUTH_KEY=${AuthKey}
-      DEBUG=true
-      SVRPOOLID=${SvrPoolID}
-EOF
-		if ! role_controller; then  # only for agent, we treat both as controller
-			cat <<EOF
-  - path: /etc/csphere/csphere-etcd2.env
-    permissions: 0644
-    owner: root
-    content: |
-      ETCD_DATA_DIR=/var/lib/etcd2
-      ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
-      ETCD_INITIAL_ADVERTISE_PEER_URLS=http://{LOCAL_IP}:2380
-      ETCD_ADVERTISE_CLIENT_URLS=http://{LOCAL_IP}:2379
-      ETCD_LISTEN_PEER_URLS=http://{LOCAL_IP}:2380
-      ETCD_DISCOVERY=${DiscoveryUrl}
-      ETCD_DEBUG=true
-EOF
-		fi
-	fi
 }
 
 gen_network_cloudconfig(){
@@ -683,6 +538,14 @@ setup_inet() {
 	for((i=0;i<=${#savedcfgs[*]}-1;i+=2));do
 		gen_network_cloudconfig "${savedcfgs[$i]}" "${savedcfgs[(($i+1))]}" >> ${TMPINET}
 	done
+
+	if [ -f "${TMPINET}" -a -s "${TMPINET}" ]; then
+		return
+	else
+		${DIALOG} --title "ERROR" \
+			--msgbox "ERROR: Network Config Not Created!" 5 38
+		exit 1
+	fi
 }
 
 # last confirm and install begin, display progress bar
