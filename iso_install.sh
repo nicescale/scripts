@@ -139,7 +139,7 @@ EOF
 
 	## section write_files
 	# install following three files whatever
-	tmp=$(cat "${CLOUDINIT}"/write_files_{csphere-prepare,csphere-etcd2-early,brnetdev} 2>&-)
+	tmp=$(cat "${CLOUDINIT}"/write_files_{csphere-prepare,csphere-etcd2-early,brnetdev,cosupdate} 2>&-)
 	tmp=$(echo -e "${tmp}" | sed -e 's/^/  /')
 	cat <<EOF
 write_files:
