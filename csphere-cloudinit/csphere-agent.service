@@ -6,7 +6,6 @@
     Description=Csphere Agent Service
     Requires=csphere-prepare.service
     Requires=csphere-skydns.service
-    Requires=csphere-etcd2.service
     After=csphere-prepare.service csphere-skydns.service csphere-etcd2.service
     After=csphere-docker.service
 
