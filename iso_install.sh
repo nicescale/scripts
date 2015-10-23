@@ -112,7 +112,7 @@ EOF
 			tmp=$(cat "${CLOUDINIT}/csphere-docker.service" 2>&-)
 			tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
 			tmp=$( echo -e "${tmp}" | \
-				sed -e 's#{EXECSTART}#/usr/bin/docker daemon -b br0 --csphere --iptables=false --default-gateway=${DEFAULT_GW} --storage-driver=overlay#'
+				sed -e 's#{EXECSTART}#/usr/bin/docker daemon -b br0 --csphere --iptables=false --ip-forward=false --default-gateway=${DEFAULT_GW} --storage-driver=overlay#'
 				)
 			cat <<EOF
 ${tmp}
