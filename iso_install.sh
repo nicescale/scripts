@@ -169,19 +169,6 @@ role_agent() {
 
 get_blockdev() {
 	local hwdisk=()
-#	eval "hwdisk=( 
-#		$( lshw -short -class disk |\
-#			awk '($1~/^\//){$1=$3=""; \
-#				gsub("^[ \t]*","",$0); \
-#				gsub("[ \t]*$","",$0); \
-#				print}' | \
-#			awk '{print "\""$1"\""; \
-#				$1=""; \
-#				gsub("[ \t]", "_", $0);\
-#				print "\""$0"\""}' 
-#		)
-#	)
-#	"
 	eval "hwdisk=(
 		$( lsblk --output NAME,TYPE,SIZE,MODEL |\
 			awk '($2=="disk"){ $2=""; \
@@ -571,11 +558,26 @@ prog_inst() {
 		exit 1
 	fi
 
+	sha1txt="${MOUNTON}/bzimage/sha1sum.txt"
+	cosimage="${MOUNTON}/bzimage/cos_production_image.bin.bz2"
+	if [ -f ${sha1txt} -a -s ${sha1txt} ]; then
+		${DIALOG} --title "Verifying Image" \
+			--infobox "Verifying COS Installation Image ... " 3 40
+		sum1=$( sha1sum $cosimage | awk '{print $1}' )
+		sum2=$( cat $sha1txt | awk '{print $1}' )
+		if [ $sum1 != $sum2 ]; then
+			${DIALOG} --title "ERROR" \
+			--msgbox "Verify COS Installation Image Failed! " 5 40
+			exit 1
+		fi
+		sleep 1
+	fi
+
 	# write cos onto device bit by bit
 	# and calling ioctl() to re-read partition table
 	(
 		progress 0 95 0.4 "writing disk ..." &
-		bunzip2 -c  ${MOUNTON}/bzimage/cos_production_image.bin.bz2 > "${DEVICE}"
+		bunzip2 -c  ${cosimage} > "${DEVICE}"
 		sleep 1
 		kill -10 $! >/dev/null 2>&1
 	
