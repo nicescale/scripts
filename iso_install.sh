@@ -50,6 +50,54 @@ coreos:
     - name: docker.service
       enable: false
 EOF
+	# setup startup services
+	if role_controller; then
+		cat <<EOF
+    - name: csphere-prepare.service
+      command: start
+      enable: true
+    - name: csphere-mongodb.service
+      command: start
+      enable: true
+    - name: csphere-prometheus.service
+      command: start
+      enable: true
+    - name: csphere-etcd2-controller.service
+      command: start
+      enable: true
+    - name: csphere-docker-controller.service
+      command: start
+      enable: true
+    - name: csphere-controller.service
+      command: start
+      enable: true
+    - name: csphere-agent.service
+      command: start
+      enable: true
+EOF
+	elif role_agent; then
+		cat <<EOF
+    - name: csphere-prepare.service
+      command: start
+      enable: true
+    - name: csphere-etcd2-agent.service
+      command: start
+      enable: true
+    - name: csphere-skydns.service
+      command: start
+      enable: true
+    - name: csphere-dockeripam.service
+      command: start
+      enable: true
+    - name: csphere-docker-agent.service
+      command: start
+      enable: true
+    - name: csphere-agent.service
+      command: start
+      enable: true
+EOF
+	fi
+
 	# append inet config
 	tmp=$(cat "${TMPINET}" 2>&-)
 	tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
@@ -330,7 +378,7 @@ setup_role() {
 		exec 3>&1
 		Role=$( ${DIALOG} --title "Select Role" \
 			--cancel-label "Exit" \
-			--radiolist "Role:" 10 60 0 \
+			--radiolist "Role:" 8 60 0 \
 			"controller" "Csphere Controller" 	r1 \
 			"agent"      "Csphere Agent" 		r2 \
 			2>&1 1>&3
