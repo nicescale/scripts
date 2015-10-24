@@ -1,7 +1,6 @@
 #!/bin/sh
 
 BASEDIR="$(cd $(dirname $0); pwd)"
-# CLOUDINIT="${BASEDIR}/csphere-cloudinit"
 DIALOGBIN="/usr/share/oem/bin/dialog"
 BACKTITLE="COS_Installation"
 DIALOG="${DIALOGBIN} --backtitle ${BACKTITLE} "

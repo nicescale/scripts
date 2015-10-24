@@ -417,8 +417,6 @@ install_isoinstaller() {
     sudo mkdir "${VM_TMP_ROOT}"/usr/share/oem/bin
     sudo cp -a "${SCRIPT_ROOT}"/dialog/dialog "${VM_TMP_ROOT}"/usr/share/oem/bin/dialog
     sudo cp -a "${SCRIPT_ROOT}"/dialog/lib64/* "${VM_TMP_ROOT}"/usr/share/oem/lib64/
-    info "Installing csphere-cloudinit"
-    sudo cp -a "${SCRIPT_ROOT}"/csphere-cloudinit/ "${VM_TMP_ROOT}"/usr/share/oem/csphere-cloudinit
 }
 
 # Any other tweaks required?
