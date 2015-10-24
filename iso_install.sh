@@ -3,7 +3,7 @@
 BASEDIR="$(cd $(dirname $0); pwd)"
 DIALOGBIN="/usr/share/oem/bin/dialog"
 BACKTITLE="COS_Installation"
-DIALOG="${DIALOGBIN} --backtitle ${BACKTITLE} "
+DIALOG="${DIALOGBIN} --colors --backtitle ${BACKTITLE} "
 TMPFILE="$(mktemp)"
 TMPINET="$(mktemp).inet"
 MOUNTON="/mnt"
@@ -286,6 +286,16 @@ get_cddev() {
 	fi
 }
 
+isLinked() {
+	local inet=$1	 s=
+	s=$(  ethtool  "${inet}" 2>&- |\
+		 awk '(/Link detected:/){print $NF;exit}'
+	)
+	if [ "${s}" == "yes" ]; then
+		return 0
+	fi
+	return 1
+}
 
 clean_mount() {
 	if mountpoint  -q ${1} >/dev/null 2>&1; then
@@ -317,23 +327,24 @@ exit_confirm() {
 # trap ctrl C
 trap 'exit_confirm' 2 15
 
-# run as root
-if [ "$(id -u)" != "0" ]; then
-	${DIALOG} --title "Note" \
-		--msgbox "Require Root Privilege" 5 26
-	exit 1
-fi
-
-# ensure cdrom device
-CDROMDEV="$(get_cddev)"
-if [ -z "${CDROMDEV}" ]; then
-	${DIALOG} --title "Note" \
-		--msgbox "CDROM Device Not Ready" 5 26
-	exit 1
-fi
-
 # welcome
 welcome() {
+	# run as root
+	if [ "$(id -u)" != "0" ]; then
+		${DIALOG} --title "Note" \
+			--msgbox "Require Root Privilege" 5 26
+		exit 1
+	fi
+
+	# ensure cdrom device
+	CDROMDEV="$(get_cddev)"
+	if [ -z "${CDROMDEV}" ]; then
+		${DIALOG} --title "Note" \
+			--msgbox "CDROM Device Not Ready" 5 26
+		exit 1
+	fi
+
+	# welcome
 	local i
 	for((i=1;i<=3;i++));do
 		${DIALOGBIN} --clear
@@ -493,7 +504,13 @@ setup_inet() {
 	local inetdevargs=()
 	for((i=0;i<=${#INETDEV[*]}-1;i+=2));do
 		if [ -n ${INETDEV[$i]} -a -n "${INETDEV[(($i+1))]}" ]; then
-			inetdevargs+=( ${INETDEV[$i]} ${INETDEV[(($i+1))]} ${i} )
+			dev=${INETDEV[$i]}
+			desc=${INETDEV[(($i+1))]}
+			link="\Zb\Z1[NoLink]\Zn"
+			if isLinked "${dev}"; then
+				link="\Zb\Z2[Linked]\Zn"
+			fi
+			inetdevargs+=( ${dev} "${link}${desc}" ${i} )
 		fi
 	done
 	if [ ${#inetdevargs[0]} -eq 0 ]; then
@@ -518,7 +535,7 @@ setup_inet() {
 		inetdev=$( ${DIALOG} --title "Select Network Interface" \
 				--ok-label "Select/Setup" --cancel-label "${ccl_label}" \
 				${extra_opts} \
-				--radiolist "Interface:" 20 70 20 \
+				--radiolist "Interface:" 20 80 20 \
 				${inetdevargs[*]} \
 				2>&1 1>&3
 			)
@@ -539,6 +556,14 @@ setup_inet() {
 			[ $? -eq 0 ] && break || continue
 		elif [ $rc -eq 3 ]; then   ## save and quit
 			break
+		fi
+
+		if ! isLinked "${inetdev}"; then
+			${DIALOG} --title "Warning" \
+				--yesno "${inetdev} Cabel Link Not Detected!\
+				\n\nAre You Sure to Continue ?" \
+				7 50
+			[ $? -eq 0 ] || continue
 		fi
 
 		cfg=
