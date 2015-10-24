@@ -390,6 +390,9 @@ setup_agentcfg() {
 		[ -z "${agentform}" ] && continue
 		agentform=( ${agentform} )
 		Controller="${agentform[0]}"; [ -z "${Controller}" ] && continue
+		Controller=$( echo -e "${Controller}" | \
+			sed -e 's#^[ \t]*https*://##g'
+		)
 		InstCode="${agentform[1]}"; [ -z "${InstCode}" ] && continue
 		if ! ( echo -e "${Controller}" | grep -E -q "^.+:[1-9]+[0-9]*$" ); then
 			${DIALOG} --title "Check Invalid" \
