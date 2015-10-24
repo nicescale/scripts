@@ -22,6 +22,7 @@ Role=
 Controller=
 ControllerPort=
 AuthKey=
+InstCode=
 DiscoveryUrl=
 SvrPoolID=
 
@@ -67,6 +68,7 @@ write_files:
       COS_CONTROLLER=${Controller}
       COS_CONTROLLER_PORT=${ControllerPort}
       COS_AUTH_KEY=${AuthKey}
+      COS_INST_CODE=${InstCode}
       COS_DISCOVERY_URL=${DiscoveryUrl}
       COS_SVRPOOL_ID=${SvrPoolID}
 EOF
@@ -157,12 +159,12 @@ is_between() {
 }
 
 role_controller() {
-	[ "${Role}" == "controller" -o "${Role}" == "both" ] && return 0
+	[ "${Role}" == "controller" ] && return 0
 	return 1
 }
 
 role_agent() {
-	[ "${Role}" == "agent" -o "${Role}" == "both" ] && return 0
+	[ "${Role}" == "agent" ] && return 0
 	return 1
 }
 
@@ -345,7 +347,6 @@ setup_role() {
 			--radiolist "Role:" 10 60 0 \
 			"controller" "Csphere Controller" 	r1 \
 			"agent"      "Csphere Agent" 		r2 \
-			"both"       "Csphere Controller + Csphere Agent" r3 \
 			2>&1 1>&3
 		)
 		rc=$?
@@ -354,12 +355,14 @@ setup_role() {
 	done
 }
 
-# if controller(include both), setup Controller
+# if controller, setup ControllerPort
 setup_contrcfg() {
-	AuthKey="$(gen_authkey 2>&-)"  		# setup AuthKey
+	# we generate AuthKey for controller
+	AuthKey="$(gen_authkey 2>&-)"
 
+	# setup ControllerPort
 	local rc=
-	while :; do				# setup ControllerPort
+	while :; do
 		exec 3>&1
 		ControllerPort=$( ${DIALOG} --title "Controller Settings" \
 			--cancel-label "Exit" \
@@ -377,12 +380,12 @@ setup_contrcfg() {
 		break
 	done
 
-	if role_agent; then			# if both, setup Controller=127.0.0.1:${ControllerPort}
-		Controller="127.0.0.1:${ControllerPort}"
-	fi
+	# this is for agent on the same cos
+	Controller="127.0.0.1:${ControllerPort}"
+	SvrPoolID="csphere-internal"
 }
 
-# if only agent, setup controller-url / authkey  / discoveryurl
+# if agent, setup controller-url / authkey  / discoveryurl
 setup_agentcfg() {
 	local agentform=
 	local rc=
@@ -401,7 +404,7 @@ setup_agentcfg() {
 		[ -z "${agentform}" ] && continue
 		agentform=( ${agentform} )
 		Controller="${agentform[0]}"; [ -z "${Controller}" ] && continue
-		AuthKey="${agentform[1]}"; [ -z "${AuthKey}" ] && continue
+		InstCode="${agentform[1]}"; [ -z "${InstCode}" ] && continue
 		if ! ( echo -e "${Controller}" | grep -E -q "^.+:[1-9]+[0-9]*$" ); then
 			${DIALOG} --title "Check Invalid" \
 				--ok-label "Return"  \
@@ -409,7 +412,7 @@ setup_agentcfg() {
 				6 48
 			continue
 		fi
-		if ! ( echo -e "${AuthKey}" | grep -E -q "^[0-9]{4,4}$" ); then
+		if ! ( echo -e "${InstCode}" | grep -E -q "^[0-9]{4,4}$" ); then
 			${DIALOG} --title "Check Invalid" \
 				--ok-label "Return"  \
 				--msgbox "InstallCode is invalid\nInstallCode should be four numbers" \
@@ -466,7 +469,7 @@ setup_inet() {
 	local savedcfgs=()
 	local ccl_label= extra_opts=
 	local rc=
-	while :; do 
+	while :; do
 		if [ "${#savedcfgs[*]}" -gt 0 ]; then
 			ccl_label="Discard"
 			extra_opts=" --extra-button --extra-label Save/Quit "
@@ -640,10 +643,9 @@ bye() {
 welcome
 setup_device
 setup_role
-if role_controller; then			# controller, setup AuthKey/ControllerPort 
-	setup_contrcfg				# if both, setup Controller
-fi
-if ! role_controller && role_agent; then       # only agent, setup Controller/AuthKey/DiscoveryUrl
+if role_controller; then
+	setup_contrcfg
+elif role_agent; then
 	setup_agentcfg
 fi
 setup_system
