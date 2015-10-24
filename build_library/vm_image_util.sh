@@ -554,6 +554,7 @@ _write_iso_disk() {
     [ -z "${bz2file}" ] && die "bz2 Images path not found"
     [ -f "${bz2file}" -a -s "${bz2file}" ] || die "bz2 Images ${bz2file} not prepared"
     cp "${bz2file}" bzimage/cos_production_image.bin.bz2
+    sha1sum bzimage/cos_production_image.bin.bz2 > bzimage/sha1sum.txt
     _write_cpio_common "$1" "${iso_target}/cos/cpio.gz"
     cp "${base_dir}"/boot/vmlinuz "${iso_target}/cos/vmlinuz"
     cp -R /usr/share/syslinux/* isolinux/
