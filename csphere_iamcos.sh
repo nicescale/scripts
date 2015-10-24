@@ -57,6 +57,7 @@ updatecpvf() {
 }
 
 build_package() {
+	echo "building package: $1"
 	if [ -n "${2}" ]; then
 		echo "USE=\"${2}\"" | sudo tee ${FMAKECONFUSER} >/dev/null
 	fi
@@ -65,16 +66,20 @@ build_package() {
 }
 
 replace_package() {
+	echo "replacing package: $1"
 	sudo mv -v ${BINDEST}${1}${SUFFIXTBZ} ${BINHOSTPATH}/${1}${SUFFIXTBZ}
 }
 
 refresh_digest() {
+	echo "updating md5sum for package: $1"
 	updatecpvf $(seekcpvf "${1}" "MD5") \
 		"MD5"  \
 		$(get_md5sum "${BINHOSTPATH}/${1}${SUFFIXTBZ}")
+	echo "updating sha1sum for package: $1"
 	updatecpvf $(seekcpvf "${1}" "SHA1") \
 		"SHA1"  \
 		$(get_sha1sum "${BINHOSTPATH}/${1}${SUFFIXTBZ}")
+	echo "updating size for package: $1"
 	updatecpvf $(seekcpvf "${1}" "SIZE") \
 		"SIZE"  \
 		$(get_size "${BINHOSTPATH}/${1}${SUFFIXTBZ}")
