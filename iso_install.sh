@@ -560,7 +560,7 @@ setup_inet() {
 
 		if ! isLinked "${inetdev}"; then
 			${DIALOG} --title "Warning" \
-				--yesno "${inetdev} Cabel Link Not Detected!\
+				--yesno "${inetdev} Cable Link Not Detected!\
 				\n\nAre You Sure to Continue ?" \
 				7 50
 			[ $? -eq 0 ] || continue
