@@ -445,6 +445,12 @@ write_vm_disk() {
     info "Writing $disk_format image $(basename "${VM_DST_IMG}")"
     _write_${disk_format}_disk "${VM_TMP_IMG}" "${VM_DST_IMG}"
 
+	info "Sha1sum on $(basename "${VM_DST_IMG}") ..."
+	sha1sum=$( sha1sum "${VM_DST_IMG}" | awk '{print $1}' )
+	tee "${VM_DST_IMG}.sha1sum.txt" <<EOF
+${sha1sum} $(basename "${VM_DST_IMG}")
+EOF
+
     # Add disk image to final file list if it isn't going to be bundled
     if [[ -z "$(_get_vm_opt BUNDLE_FORMAT)" ]]; then
         VM_GENERATED_FILES+=( "${VM_DST_IMG}" )

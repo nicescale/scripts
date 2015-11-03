@@ -344,7 +344,7 @@ BUILD_DIR=
 # Standard filenames
 COREOS_DEVELOPER_IMAGE_NAME="coreos_developer_image.bin"
 COREOS_DEVELOPER_CONTAINER_NAME="coreos_developer_container.bin"
-COREOS_PRODUCTION_IMAGE_NAME="coreos_production_image.bin"
+COREOS_PRODUCTION_IMAGE_NAME="cos_production_image.bin"
 
 # -----------------------------------------------------------------------------
 # Functions
