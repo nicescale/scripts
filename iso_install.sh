@@ -24,6 +24,7 @@ AuthKey=
 InstCode=
 DiscoveryUrl=
 SvrPoolID=
+ClusterSize=1  # etcd cluster size
 
 gen_cloudconfig() {
 	local tmp=
@@ -118,6 +119,7 @@ write_files:
       COS_INST_CODE=${InstCode}
       COS_DISCOVERY_URL=${DiscoveryUrl}
       COS_SVRPOOL_ID=${SvrPoolID}
+      COS_CLUSTER_SIZE=${ClusterSize}
 EOF
 }
 
