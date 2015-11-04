@@ -596,6 +596,7 @@ setup_inet() {
 		# accumulated savecfgs
 		if [ -n "${cfg}" ]; then
 			savedcfgs+=( "${inetdev}" "${cfg}" ) 
+			break 1  # only allow to setup one interface
 		fi	
 	done
 
@@ -718,7 +719,6 @@ bye() {
 
 # Main Body Begin 
 welcome
-setup_device
 setup_role
 if role_controller; then
 	setup_contrcfg
@@ -727,6 +727,7 @@ elif role_agent; then
 fi
 setup_system
 setup_inet
+setup_device
 prog_inst
 cloudinit
 bye
