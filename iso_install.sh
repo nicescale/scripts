@@ -24,7 +24,7 @@ AuthKey=
 InstCode=
 DiscoveryUrl=
 SvrPoolID=
-ClusterSize=1  # etcd cluster size
+ClusterSize=3  # etcd cluster size
 
 gen_cloudconfig() {
 	local tmp=
