@@ -577,6 +577,9 @@ setup_inet() {
 			[ $? -eq 0 ] || continue
 		fi
 
+		# try to obtain ip configs via dhclient for inetface
+		dhclient ${inetdev} >/dev/null 2>&1
+
 		cfg=
 		now=( $(get_inetcfg "${inetdev}") )
 		while [ -z "${cfg}" ]; do
