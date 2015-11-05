@@ -419,19 +419,32 @@ setup_contrcfg() {
 	local rc=
 	while :; do
 		exec 3>&1
-		ControllerPort=$( ${DIALOG} --title "Controller Settings" \
+		controllerform=$( ${DIALOG} --title "Controller Settings" \
 			--cancel-label "Exit" \
-			--form "Parameter:" 7 60 0 \
-			"HTTP Port:"    1 1 "80" 1 12 32 0 \
+			--form "Parameter:" 10 60 0 \
+			"HTTP    Port:"    1 1 "80" 1 12 32 0 \
+			"Cluster Size:"    2 1 "3"  2 12 32 0 \
 			2>&1 1>&3
 		)
 		rc=$?
 		exec 3>&-
 		[ $rc -eq 1 ] && exit_confirm
+
+		controllerform=( ${controllerform} )
+
+		ControllerPort=${controllerform[0]}
 		[ -z "${ControllerPort}" ] && continue
 		ControllerPort="${ControllerPort//[ \t]}"
 		[ -n "${ControllerPort//[0-9]}" ] && continue
 		[ "${ControllerPort}" == "22" ] && continue
+
+		ClusterSize=${controllerform[1]}
+		[ -z "${ClusterSize}" ] && continue
+		ClusterSize="${ClusterSize//[ \t]}"
+		[ -n "${ClusterSize//[0-9]}" ] && continue
+		(( ${ClusterSize} % 2 != 1 )) && continue
+		[ ${ClusterSize} -gt 9 ] && continue
+
 		break
 	done
 
