@@ -26,6 +26,9 @@ DiscoveryUrl=
 SvrPoolID=
 ClusterSize=3  # etcd cluster size
 
+# etcd name = HostName-EtcdName
+EtcdName=$(mktemp -u XXXX)
+
 gen_cloudconfig() {
 	local tmp=
 
@@ -120,6 +123,7 @@ write_files:
       COS_DISCOVERY_URL=${DiscoveryUrl}
       COS_SVRPOOL_ID=${SvrPoolID}
       COS_CLUSTER_SIZE=${ClusterSize}
+      COS_ETCD_NAME=${HostName}-${EtcdName}
 EOF
 }
 
