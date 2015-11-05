@@ -338,6 +338,7 @@ welcome() {
 	# run as root
 	if [ "$(id -u)" != "0" ]; then
 		${DIALOG} --title "Note" \
+			--ok-label "Exit" \
 			--msgbox "Require Root Privilege" 5 26
 		exit 1
 	fi
@@ -346,6 +347,7 @@ welcome() {
 	CDROMDEV="$(get_cddev)"
 	if [ -z "${CDROMDEV}" ]; then
 		${DIALOG} --title "Note" \
+			--ok-label "Exit" \
 			--msgbox "CDROM Device Not Ready" 5 26
 		exit 1
 	fi
@@ -357,6 +359,7 @@ welcome() {
 		sleep 1s
 	done
 	${DIALOG} --title "Welcome" \
+		--ok-label "Continue" \
 		--msgbox "Welcome to COS Installation Guid" 5 36
 }
 
@@ -371,6 +374,7 @@ setup_device() {
 	done
 	if [ ${#blockdevargs[0]} -eq 0 ]; then
 		${DIALOG} --title "ERROR" \
+			--ok-label "Exit" \
 			--msgbox "ERROR: No Writable Block Device Found!" 5 42
 		exit 1
 	fi
@@ -521,8 +525,9 @@ setup_inet() {
 	done
 	if [ ${#inetdevargs[0]} -eq 0 ]; then
 	${DIALOG} --title "NOTE" \
-		--msgbox "NOTE: No Network Interface Device Found!" 5 44
-		return 0
+		--ok-label "Exit" \
+		--msgbox "ERROR: No Network Interface Device Found!" 5 45
+		exit 1
 	fi
 
 	local inetdev=
@@ -615,6 +620,7 @@ setup_inet() {
 		return
 	else
 		${DIALOG} --title "ERROR" \
+			--ok-label "Exit" \
 			--msgbox "ERROR: Network Config Not Created!" 5 38
 		exit 1
 	fi
@@ -637,6 +643,7 @@ prog_inst() {
 	sleep 1
 	if [ ! -d ${MOUNTON}/bzimage/ ] ; then
 		${DIALOG} --title "ERROR" \
+			--ok-label "Exit" \
 			--msgbox "ERROR to Mount CDROM Device ${CDROMDEV}" 5 45
 		exit 1
 	fi
@@ -650,6 +657,7 @@ prog_inst() {
 		sum2=$( cat $sha1txt | awk '{print $1}' )
 		if [ $sum1 != $sum2 ]; then
 			${DIALOG} --title "ERROR" \
+			--ok-label "Exit" \
 			--msgbox "Verify COS Installation Image Failed! " 5 40
 			exit 1
 		fi
@@ -673,6 +681,7 @@ prog_inst() {
 
 	if [ ! -e "${DEVICE}9" ]; then
 		${DIALOG} --title "ERROR" \
+			--ok-label "Exit" \
 			--msgbox "ERROR on Installing COS To Device ${CDROMDEV}" 5 45
 		exit 1
 	fi
@@ -687,6 +696,7 @@ cloudinit() {
 	gen_cloudconfig > "${TMPFILE}"
 	if ! coreos-cloudinit -validate --from-file="${TMPFILE}" >/dev/null 2>&1;  then
 		${DIALOG} --title "ERROR" \
+			--ok-label "Exit" \
 			--msgbox "ERROR: Cloud Config Validation Error!" 5 41
 		exit 1
 	fi
@@ -694,12 +704,49 @@ cloudinit() {
 		--exit-label "Confirm" \
 		--textbox "${TMPFILE}" \
 		20 70
+#	while :; do
+#		${DIALOG} --title "Confirm Cloud Config" \
+#			--ok-label "Confirm" \
+#			--extra-button --extra-label "ReEdit" \
+#			--textbox "${TMPFILE}" \
+#			20 70
+#
+#		if [ $? -eq 0 ]; then	# confirmed
+#			break 1
+#
+#		elif [ $? -eq 3 ]; then  # Re Edit
+#			exec 3>&1
+#			reEdit=$(
+#				${DIALOG} --title "Re Edit Cloud Config" \
+#					--ok-label "Save" \
+#					--cancel-label "Discard" \
+#					--editbox "${TMPFILE}" \
+#					20 70
+#				2>&1 1>&3
+#			)  # hang up here, don't know why ?
+#			rc=$?
+#			exec 3>&-
+#			[ $rc -eq 1 ] && continue 1 # discard
+#			if [ $rc -eq 0 ]; then   # save
+#				reEditFile="/tmp/.reEdit"
+#				echo -e "${reEdit}" > ${reEditFile}
+#				if ! coreos-cloudinit -validate --from-file="${reEditFile}" >/dev/null 2>&1;  then
+#					${DIALOG} --title "ERROR" \
+#						--ok-label "Return" \
+#						--msgbox "ERROR: Cloud Config Validation Error!\nFall Back to Original Cloud Config!" 6 41
+#						continue 1
+#				fi
+#				cp -f ${reEditFile} ${TMPFILE} # overwrite origin cloud config
+#			fi
+#		fi
+#	done
 
 	# remount cos partition / on /mnt1
 	mkdir -p /mnt1
 	mount -t ext4 ${DEVICE}9 /mnt1
 	if [ ! -d /mnt1/var/lib/ ]; then
 		${DIALOG} --title "ERROR" \
+			--ok-label "Exit" \
 			--msgbox "ERROR: Re-Mount COS Root Partition!" 5 41
 		exit 1
 	fi
@@ -709,6 +756,7 @@ cloudinit() {
 	cp "${TMPFILE}" /mnt1/var/lib/coreos-install/user_data
 	if [ ! -s /mnt1/var/lib/coreos-install/user_data ]; then
 		${DIALOG} --title "ERROR" \
+			--ok-label "Exit" \
 			--msgbox "ERROR: Cloud Config Install Error!" 5 41
 		clean_mount /mnt1
 		exit 1
@@ -719,6 +767,7 @@ cloudinit() {
 bye() {
 	# finished
 	${DIALOG} --title "Finished" \
+		--ok-label "Reboot" \
 		--msgbox "Installation Finished! Reboot Now ? " 5 39
 }
 
