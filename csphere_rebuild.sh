@@ -1,7 +1,12 @@
 #!/bin/sh
 set -e
 
-assets_url="http://tsing:e0cab9e41247ec200b7eb6ec5cb159ec@ci.csphe.re/job/csphere-fe/lastSuccessfulBuild/artifact/dist/assets-0.14.tgz"
+# newest
+# assets_url="http://tsing:e0cab9e41247ec200b7eb6ec5cb159ec@ci.csphe.re/job/csphere-fe/lastSuccessfulBuild/artifact/dist/assets-0.14.tgz"
+
+# 1.0.0
+assets_url="http://tsing:e0cab9e41247ec200b7eb6ec5cb159ec@ci.csphe.re/job/csphere-fe/256/artifact/dist/assets-0.14.tgz"
+
 mongod_url="http://52.68.20.57/cos-files/mongo-3.0.3.tgz"
 registry_url="http://52.68.20.57/cos-files/registry.img"
 
