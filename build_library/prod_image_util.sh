@@ -47,11 +47,14 @@ create_prod_image() {
   set_image_profile prod
   extract_prod_gcc "${root_fs_dir}"
   emerge_to_image "${root_fs_dir}" "${base_pkg}"
+  # emerge csphere product into image
   emerge_to_image "${root_fs_dir}" "csphere/prometheus"
   emerge_to_image "${root_fs_dir}" "csphere/docker-ipam"
   emerge_to_image "${root_fs_dir}" "csphere/csphere"
   emerge_to_image "${root_fs_dir}" "csphere/skydns"
   emerge_to_image "${root_fs_dir}" "csphere/costest"
+  # emerge tools we need into image
+  emerge_to_image "${root_fs_dir}" "net-misc/dhcp"
   write_packages "${root_fs_dir}" "${BUILD_DIR}/${image_packages}"
   write_licenses "${root_fs_dir}" "${BUILD_DIR}/${image_licenses}"
   extract_docs "${root_fs_dir}"
