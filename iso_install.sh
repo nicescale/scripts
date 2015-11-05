@@ -422,8 +422,8 @@ setup_contrcfg() {
 		controllerform=$( ${DIALOG} --title "Controller Settings" \
 			--cancel-label "Exit" \
 			--form "Parameter:" 10 60 0 \
-			"HTTP    Port:"    1 1 "80" 1 12 32 0 \
-			"Cluster Size:"    2 1 "3"  2 12 32 0 \
+			"HTTP    Port: "    1 1 "80" 1 16 32 0 \
+			"Cluster Size: "    2 1 "3"  2 16 32 0 \
 			2>&1 1>&3
 		)
 		rc=$?
@@ -462,8 +462,8 @@ setup_agentcfg() {
 		agentform=$( ${DIALOG} --title "Agent Settings" \
 				--cancel-label "Exit" \
 				--form "Parameter:" 10 60 0 \
-				"Controller :"    1 1 "" 1 12 32 0 \
-				"InstallCode:"    2 1 "" 2 12 32 0 \
+				"Controller : "    1 1 "" 1 14 32 0 \
+				"InstallCode: "    2 1 "" 2 14 32 0 \
 				2>&1 1>&3		
 			)
 		rc=$?
@@ -591,6 +591,10 @@ setup_inet() {
 		fi
 
 		# try to obtain ip configs via dhclient for inetface
+		${DIALOG} --title "DHCP Request" \
+			--infobox "Trying to Obtain IP Configs via DHCP ..." 3 47
+		sleep 3
+
 		dhclient ${inetdev} >/dev/null 2>&1
 
 		cfg=
