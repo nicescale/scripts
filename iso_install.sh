@@ -25,6 +25,8 @@ InstCode=
 DiscoveryUrl=
 SvrPoolID=
 ClusterSize=3  # etcd cluster size
+HasVlan=0
+VlanID=-1
 
 # etcd name = HostName-EtcdName
 EtcdName=$(mktemp -u XXXX)
@@ -131,7 +133,7 @@ gen_network_cloudconfig(){
 	local inet="$1" cfg="$2"
 	cat << EOF
 - name: br0-static.network
-  content : |
+  content: |
     [Match]
     Name=br0
 
@@ -142,15 +144,44 @@ EOF
 ${tmp}
 EOF
 
-	cat << EOF
+	if [ ${HasVlan} -eq 0  ]; then
+		cat << EOF
 - name: br0-slave-${inet}.network
-  content : |
+  content: |
     [Match]
     Name=${inet}
 
     [Network]
     Bridge=br0
 EOF
+
+	elif [ ${HasVlan} -eq 1 ]; then
+		cat << EOF
+- name: vlan${VlanID}.netdev
+  content: |
+    [NetDev]
+    Name=vlan${VlanID}
+    Kind=vlan
+
+    [VLAN]
+    Id=${VlanID}
+- name: vlan${VlanID}.network
+  content: |
+    [Match]
+    Name=vlan${VlanID}
+
+    [Network]
+    Bridge=br0
+- name: ${inet}.network
+  content: |
+    [Match]
+    Name=${inet}
+
+    [Network]
+    DHCP=no
+    VLAN=vlan${VlanID}
+EOF
+	fi
 }
 
 gen_authkey() {
@@ -161,7 +192,8 @@ inetcfg_error=(
 	1  "IPAddr Malformation"
 	2  "Gateway Malformation"
 	3  "Dns Malformation"
-	4  "Config Missing"
+	4  "VlanId Malformation"
+	5  "Config Missing"
 )
 
 get_error() {
@@ -177,11 +209,12 @@ get_error() {
 parse_inetcfg() {
 	local s="${1}"
 	local ln=$(echo -e "${s}" | awk 'END{print NR}')
-	[ $ln -ne 3 ] && return 4
+	[ $ln -ne 4 ] && return 5
 	local ipaddr= gateway= dns=
 	ipaddr=$(echo -e "${s}" | awk '{print;exit 0}')
 	gateway=$(echo -e "${s}" | awk '(NR==2){print;exit}')
 	dns=$(echo -e "${s}" | awk '(NR==3){print;exit}')
+	vlan=$(echo -e "${s}" | awk '(NR==4){print;exit}')
 	pnum=$(echo -e "${ipaddr}" | awk -F"/" '{print NF}')
 	if [ $pnum -ne 2 ]; then
 		return 1
@@ -193,6 +226,11 @@ parse_inetcfg() {
 	fi
 	isipaddr "${gateway}"  || return 2
 	isipaddr "${dns}" || return 3
+	if [ "${vlan}" != "" ]; then
+		isvlanid "${vlan}" || return 4
+		HasVlan=1
+		VlanID=${vlan}
+	fi
 	cat << EOF
 [Network]
 DHCP=no
@@ -209,6 +247,10 @@ isipaddr() {
 
 is_between() {
         echo $1 $2 $3 | awk '{if($1>=$2 && $1<=$3){exit 0;} else{exit 1;}}' 2>&- 
+}
+
+isvlanid() {
+	is_between "${1}" 0 4095
 }
 
 role_controller() {
@@ -595,7 +637,7 @@ setup_inet() {
 			--infobox "Trying to Obtain IP Configs via DHCP ..." 3 47
 		sleep 3
 
-		dhclient ${inetdev} >/dev/null 2>&1
+		dhclient -timeout 10s ${inetdev} >/dev/null 2>&1
 
 		cfg=
 		now=( $(get_inetcfg "${inetdev}") )
@@ -607,6 +649,7 @@ setup_inet() {
 					"IP/Mask  :"     1 1 "${now[0]}"  1 12 32 0 \
 					"Gateway  :"     2 1 "${now[1]}"  2 12 32 0 \
 					"DnsMaster:"     3 1 "${now[2]}"  3 12 32 0 \
+					"VLANID   :"     4 1 ""           4 12 32 0 \
 					2>&1 1>&3
 				)
 			rc=$?
