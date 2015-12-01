@@ -637,7 +637,7 @@ setup_inet() {
 			--infobox "Trying to Obtain IP Configs via DHCP ..." 3 47
 		sleep 3
 
-		dhclient -timeout 10s ${inetdev} >/dev/null 2>&1
+		dhclient ${inetdev} >/dev/null 2>&1
 
 		cfg=
 		now=( $(get_inetcfg "${inetdev}") )
