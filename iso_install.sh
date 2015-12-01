@@ -209,8 +209,8 @@ get_error() {
 parse_inetcfg() {
 	local s="${1}"
 	local ln=$(echo -e "${s}" | awk 'END{print NR}')
-	[ $ln -ne 4 ] && return 5
-	local ipaddr= gateway= dns=
+	[ $ln -lt 3 ] && return 5
+	local ipaddr= gateway= dns= vlan=
 	ipaddr=$(echo -e "${s}" | awk '{print;exit 0}')
 	gateway=$(echo -e "${s}" | awk '(NR==2){print;exit}')
 	dns=$(echo -e "${s}" | awk '(NR==3){print;exit}')
@@ -221,13 +221,15 @@ parse_inetcfg() {
 	fi
 	ipp1=$(echo -e "${ipaddr}" | awk -F"/" '{print $1}')
 	ipp2=$(echo -e "${ipaddr}" | awk -F"/" '{print $NF}')
-	if ! isipaddr "${ipp1}" || ! is_between "${ipp2}" 0 32; then
+	if ! isipaddr "${ipp1}" || ! is_between "${ipp2}" 0 32 || ! isnumber "${ipp2}" ; then
 		 return 1
 	fi
 	isipaddr "${gateway}"  || return 2
 	isipaddr "${dns}" || return 3
 	if [ "${vlan}" != "" ]; then
-		isvlanid "${vlan}" || return 4
+		if ! isvlanid "${vlan}" || ! isnumber "${vlan}"; then
+			return 4
+		fi
 		HasVlan=1
 		VlanID=${vlan}
 	fi
@@ -239,6 +241,10 @@ Gateway=${gateway}
 DNS=${dns}
 EOF
 	return 0
+}
+
+isnumber() {
+	[ -z "${1//[0-9]}" ]
 }
 
 isipaddr() {
