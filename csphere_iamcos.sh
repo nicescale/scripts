@@ -16,6 +16,7 @@ BINDEST=
 SUFFIXTBZ=".tbz2"
 SUFFIXEBD=".ebuild"
 BUILDLST=(
+	"sys-kernel/coreos-kernel-4.0.5" "coreos-overlay/sys-kernel/coreos-kernel/coreos-kernel-4.0.5" ""
 	"net-misc/ntp-4.2.8-r3"  "coreos-overlay/net-misc/ntp/ntp-4.2.8-r3" ""
 	"sys-apps/baselayout-3.0.14" "coreos-overlay/sys-apps/baselayout/baselayout-3.0.14" ""
 	"coreos-base/coreos-init-0.0.1-r108" "coreos-overlay/coreos-base/coreos-init/coreos-init-0.0.1-r108" "symlink-usr"
