@@ -114,6 +114,11 @@ if [[ "${FLAGS_csphere}" -eq "${FLAGS_TRUE}" ]]; then
 	prepare_csphere_file "${FLAGS_csphere_mongod_path}" "${save}"
 	save="${SCRIPT_ROOT}/../third_party/coreos-overlay/csphere/csphere/files/registry.img"
 	prepare_csphere_file "${FLAGS_csphere_registry_path}" "${save}"
+
+	info "preparing /bin/pwd"
+	sudo cp -fv /bin/pwd /usr/bin/pwd 
+	sudo cp -fv /bin/pwd /build/amd64-usr/bin/pwd
+	sudo cp -fv /bin/pwd /build/amd64-usr/usr/bin/pwd
 fi
 
 check_gsutil_opts
@@ -288,6 +293,12 @@ sudo -E "${EMERGE_CMD[@]}" "${EMERGE_FLAGS[@]}" csphere/csphere
 
 info "Merging costest"
 sudo -E "${EMERGE_CMD[@]}" "${EMERGE_FLAGS[@]}" csphere/costest
+
+# wtf on coreos kernel build, with lost util: /bin/pwd
+info "Confirm Prepartion on /bin/pwd For Kernel Building ..."
+sudo cp -fv /usr/bin/pwd /bin/pwd
+sudo cp -fv /usr/bin/pwd /build/amd64-usr/bin/pwd
+sudo cp -fv /usr/bin/pwd /build/amd64-usr/usr/bin/pwd
 
 info "Merging board packages now"
 sudo -E "${EMERGE_CMD[@]}" "${EMERGE_FLAGS[@]}" \
