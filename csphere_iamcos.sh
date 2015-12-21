@@ -12,10 +12,13 @@ SRCDIR="../third_party/"
 FMAKECONF="/etc/portage/make.conf"
 FMAKECONFUSER="/etc/portage/make.conf.user"
 DEFAULT_BINDEST="/var/lib/portage/pkgs/"
+KERNEL_PREBUILT_PATH="${SRCDIR}/coreos-overlay/csphere/csphere/files/"
 BINDEST=
 SUFFIXTBZ=".tbz2"
 SUFFIXEBD=".ebuild"
 BUILDLST=(
+	"sys-kernel/coreos-kernel-4.0.5" "${KERNEL_PREBUILT_PATH}/kernel.tbz2" "KERNEL"
+	"sys-kernel/coreos-firmware-20141009-r1" "${KERNEL_PREBUILT_PATH}/firmware.tbz2" "KERNEL"
 	"net-misc/ntp-4.2.8-r3"  "coreos-overlay/net-misc/ntp/ntp-4.2.8-r3" ""
 	"sys-apps/baselayout-3.0.14" "coreos-overlay/sys-apps/baselayout/baselayout-3.0.14" ""
 	"coreos-base/coreos-init-0.0.1-r108" "coreos-overlay/coreos-base/coreos-init/coreos-init-0.0.1-r108" "symlink-usr"
@@ -65,6 +68,11 @@ build_package() {
 	sudo ebuild --skip-manifest ${SRCDIR}${1}${SUFFIXEBD} "package"
 }
 
+prepare_kernel_package() {
+	echo "preparing kernel package: $1"
+	cp -fv "${2}" ${BINDEST}${1}${SUFFIXTBZ}
+}
+
 replace_package() {
 	echo "replacing package: $1"
 	sudo mv -v ${BINDEST}${1}${SUFFIXTBZ} ${BINHOSTPATH}/${1}${SUFFIXTBZ}
@@ -88,7 +96,11 @@ refresh_digest() {
 # main body begin
 BINDEST=$(get_bindest)
 for((i=0;i<=${#BUILDLST[*]}-1;i+=3));do
-	build_package ${BUILDLST[$(($i+1))]} ${BUILDLST[$(($i+2))]}
+	if [ "${BUILDLST[$(($i+2))]}" == "KERNEL" ]; then
+		prepare_kernel_package ${BUILDLST[$i]} ${BUILDLST[$(($i+1))]}
+	else
+		build_package ${BUILDLST[$(($i+1))]} ${BUILDLST[$(($i+2))]}
+	fi
 	replace_package ${BUILDLST[$i]}
 	refresh_digest ${BUILDLST[$i]}
 done

@@ -31,6 +31,10 @@ DEFINE_string csphere_mongod_path "" \
   "Csphere 3.0.3 mongod path or url"
 DEFINE_string csphere_registry_path "" \
   "Csphere latest registry image path or url"
+DEFINE_string csphere_kernel_path "" \
+  "Csphere prebuilt binary kernel package path or url"
+DEFINE_string csphere_firmware_path "" \
+  "Csphere prebuilt binary kernel firmware package path or url"
 
 # include upload options
 . "${BUILD_LIBRARY_DIR}/release_util.sh" || exit 1
@@ -47,7 +51,7 @@ dependencies they might need).
 
 Csphere product build mode:
   --csphere  --csphere_assets_path=<...>  --csphere_mongod_path=<...>  --csphere_registry_path=<...>
-
+	--csphere_kernel_path=<...>  --csphere_firmware_path=<...>
 "
 show_help_if_requested "$@"
 
@@ -114,6 +118,10 @@ if [[ "${FLAGS_csphere}" -eq "${FLAGS_TRUE}" ]]; then
 	prepare_csphere_file "${FLAGS_csphere_mongod_path}" "${save}"
 	save="${SCRIPT_ROOT}/../third_party/coreos-overlay/csphere/csphere/files/registry.img"
 	prepare_csphere_file "${FLAGS_csphere_registry_path}" "${save}"
+	save="${SCRIPT_ROOT}/../third_party/coreos-overlay/csphere/csphere/files/kernel.tbz2"
+	prepare_csphere_file "${FLAGS_csphere_kernel_path}" "${save}"
+	save="${SCRIPT_ROOT}/../third_party/coreos-overlay/csphere/csphere/files/firmware.tbz2"
+	prepare_csphere_file "${FLAGS_csphere_firmware_path}" "${save}"
 
 	info "preparing /bin/pwd"
 	sudo cp -fv /bin/pwd /usr/bin/pwd 
