@@ -20,15 +20,12 @@ case "${mode}" in
 		openssl passwd -1 -stdin | \
 		sudo tee /etc/shared_user_passwd.txt >/dev/null
 	./setup_board --default --board=amd64-usr
+	./csphere_prepare_kernel.sh "${kernel_url}" "${firmware_url}"
 	./csphere_iamcos.sh
 	./build_packages --csphere  \
 		--csphere_assets_path="${assets_url}" \
 		--csphere_mongod_path="${mongod_url}" \
-		--csphere_registry_path="${registry_url}" \
-		--csphere_kernel_path="${kernel_url}" \
-		--csphere_firmware_path="${firmware_url}"
-		# --reuse_pkgs_from_local_boards \  # this flag is abondoned
-		# --nogetbinpkg  # directely use built binary to save time
+		--csphere_registry_path="${registry_url}"
 	./build_image prod
 	;;
 "iso")
