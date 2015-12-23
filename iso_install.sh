@@ -27,6 +27,8 @@ SvrPoolID=
 ClusterSize=3  # etcd cluster size
 HasVlan=0
 VlanID=-1
+NetMode=
+InetDev=
 
 # etcd name = HostName-EtcdName
 EtcdName=$(mktemp -u XXXX)
@@ -126,11 +128,16 @@ write_files:
       COS_SVRPOOL_ID=${SvrPoolID}
       COS_CLUSTER_SIZE=${ClusterSize}
       COS_ETCD_NAME=${HostName}-${EtcdName}
+      COS_NETMODE=${NetMode}
+      COS_INETDEV=${InetDev}
 EOF
 }
 
 gen_network_cloudconfig(){
 	local inet="$1" cfg="$2"
+
+# bridge network
+if [ "${NetMode}" == "bridge" ]; then
 	cat << EOF
 - name: br0-static.network
   content: |
@@ -182,6 +189,22 @@ EOF
     VLAN=vlan${VlanID}
 EOF
 	fi
+
+# ipvlan network
+elif [ "${NetMode}" == "ipvlan" ]; then
+	cat << EOF
+- name: ${inet}-static.network
+  content: |
+    [Match]
+    Name=${inet}
+
+EOF
+	local tmp=$( parse_inetcfg "${cfg}" )
+	tmp=$(echo -e "${tmp}" | sed -e 's/^/    /')
+	cat << EOF
+${tmp}
+EOF
+fi
 }
 
 gen_authkey() {
@@ -644,6 +667,23 @@ setup_inet() {
 		sleep 3
 
 		dhclient ${inetdev} >/dev/null 2>&1
+		# dhclient ${inetdev}
+
+		# network mode
+		rc=
+		while [ -z "${NetMode}" ]; do
+			exec 3>&1
+			NetMode=$( ${DIALOG} --title "Select Network Type" \
+				--cancel-label "Exit" \
+				--radiolist "NetMode:" 8 60 0 \
+				"bridge"   "Bridge Network"   r1 \
+				"ipvlan"   "Ipvlan Network"   r2 \
+				2>&1 1>&3
+			)
+			rc=$?
+			exec 3>&-
+			[ $rc -eq 1 ] && exit_confirm
+		done
 
 		cfg=
 		now=( $(get_inetcfg "${inetdev}") )
@@ -672,6 +712,8 @@ setup_inet() {
 				continue 1
 			fi
 		done
+
+		InetDev="${inetdev}"
 
 		# accumulated savecfgs
 		if [ -n "${cfg}" ]; then
