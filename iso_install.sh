@@ -55,6 +55,17 @@ coreos:
     reboot-strategy: off
     server: http://upgrade.csphere.cn/update
   units:
+    - name: settimezone.service
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=Set Time Zone +0800
+
+        [Service]
+        ExecStart=/usr/bin/timedatectl set-timezone Asia/Shanghai
+        RemainAfterExit=yes
+        Type=oneshot
     - name: docker.service
       enable: false
 EOF
