@@ -690,20 +690,22 @@ setup_inet() {
 		# dhclient ${inetdev}
 
 		# network mode
-		rc=
-		while [ -z "${NetMode}" ]; do
-			exec 3>&1
-			NetMode=$( ${DIALOG} --title "Select Network Type" \
-				--cancel-label "Exit" \
-				--radiolist "NetMode:" 8 60 0 \
-				"bridge"   "Bridge Network"   r1 \
-				"ipvlan"   "Ipvlan Network"   r2 \
-				2>&1 1>&3
-			)
-			rc=$?
-			exec 3>&-
-			[ $rc -eq 1 ] && exit_confirm
-		done
+		if role_agent; then
+			rc=
+			while [ -z "${NetMode}" ]; do
+				exec 3>&1
+				NetMode=$( ${DIALOG} --title "Select Network Type" \
+					--cancel-label "Exit" \
+					--radiolist "NetMode:" 8 60 0 \
+					"bridge"   "Bridge Network"   r1 \
+					"ipvlan"   "Ipvlan Network"   r2 \
+					2>&1 1>&3
+				)
+				rc=$?
+				exec 3>&-
+				[ $rc -eq 1 ] && exit_confirm
+			done
+		fi
 
 		cfg=
 		now=( $(get_inetcfg "${inetdev}") )
