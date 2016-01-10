@@ -142,15 +142,6 @@ write_files:
       COS_NETMODE=${NetMode}
       COS_INETDEV=${InetDev}
 EOF
-	# disable udev rename for interface if ipvlan
-	if [ "${NetMode}" == "ipvlan" ]; then
-		cat <<EOF
-  - path:  /etc/udev/rules.d/80-net-setup-link.rules
-    permissions: 0644
-    owner: root
-    content: |
-EOF
-	fi
 }
 
 gen_network_cloudconfig(){
@@ -213,10 +204,10 @@ EOF
 # ipvlan network
 elif [ "${NetMode}" == "ipvlan" ]; then
 	cat << EOF
-- name: eth0-static.network
+- name: ${inet}-static.network
   content: |
     [Match]
-    Name=eth0
+    Name=${inet}
 
 EOF
 	local tmp=$( parse_inetcfg "${cfg}" )
@@ -736,10 +727,6 @@ setup_inet() {
 				continue 1
 			fi
 		done
-
-		if [ "${NetMode}" == "ipvlan" ]; then
-			InetDev="eth0"
-		fi
 
 		# accumulated savecfgs
 		if [ -n "${cfg}" ]; then
