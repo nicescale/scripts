@@ -27,7 +27,7 @@ SvrPoolID=
 ClusterSize=3  # etcd cluster size
 HasVlan=0
 VlanID=-1
-NetMode=
+NetMode="bridge"
 InetDev=
 
 # etcd name = HostName-EtcdName
