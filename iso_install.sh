@@ -731,6 +731,7 @@ setup_inet() {
 		# accumulated savecfgs
 		if [ -n "${cfg}" ]; then
 			savedcfgs+=( "${inetdev}" "${cfg}" ) 
+			InetDev="${inetdev}"
 			break 1  # only allow to setup one interface
 		fi	
 	done
