@@ -27,7 +27,7 @@ SvrPoolID=
 ClusterSize=3  # etcd cluster size
 HasVlan=0
 VlanID=-1
-NetMode="bridge"
+NetMode=
 InetDev=
 
 # etcd name = HostName-EtcdName
@@ -705,6 +705,8 @@ setup_inet() {
 				exec 3>&-
 				[ $rc -eq 1 ] && exit_confirm
 			done
+		else
+			NetMode="bridge"
 		fi
 
 		cfg=
