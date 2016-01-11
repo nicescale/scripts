@@ -112,6 +112,8 @@ setup_disk_image "${FLAGS_disk_layout}"
 install_oem_package
 # install iso installer script
 install_isoinstaller
+# install product version info
+install_product_version
 run_fs_hook
 
 # Changes done, glue it together

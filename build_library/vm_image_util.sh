@@ -419,6 +419,27 @@ install_isoinstaller() {
     sudo cp -a "${SCRIPT_ROOT}"/dialog/lib64/* "${VM_TMP_ROOT}"/usr/share/oem/lib64/
 }
 
+# install csphere product version info
+install_product_version() {
+	info "Installing csphere product version info"
+	local path="/tmp/csphere-product-version/"
+	if [ ! -d "${path}" ]; then
+		info "$path not prepared, skip"
+		return
+	fi
+	git log --pretty=format:"%h - %an, %ai : %s" -1 | sudo tee $path/csphere-product-scripts.txt
+	for f in `ls $path/csphere-product-*.txt`
+	do
+		pname=$( echo -e ${f##*/} | sed -e 's/csphere-product-//g; s/\.txt$//g' )
+		(
+			echo $pname
+			cat $f
+			echo
+			echo
+		)  | sudo tee -a "${VM_TMP_ROOT}/usr/share/oem/csphere_product_version.txt" "/tmp/csphere_product_version.txt"
+	done
+}
+
 # Any other tweaks required?
 run_fs_hook() {
     local fs_hook=$(_get_vm_opt FS_HOOK)
