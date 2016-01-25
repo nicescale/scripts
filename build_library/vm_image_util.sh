@@ -422,13 +422,8 @@ install_isoinstaller() {
 # install csphere product version info
 install_product_version() {
 	info "Installing csphere product version info"
-	local path="/tmp/csphere-product-version/"
-	if [ ! -d "${path}" ]; then
-		info "$path not prepared, skip"
-		return
-	fi
-	git log --pretty=format:"%h - %an, %ai : %s" -1 | sudo tee $path/csphere-product-scripts.txt
-	for f in `ls $path/csphere-product-*.txt`
+	git log --pretty=format:"%h - %an, %ai : %s" -1 | sudo tee /tmp/csphere-product-scripts.txt
+	for f in `ls /tmp/csphere-product-*.txt`
 	do
 		pname=$( echo -e ${f##*/} | sed -e 's/csphere-product-//g; s/\.txt$//g' )
 		(

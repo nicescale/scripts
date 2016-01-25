@@ -33,7 +33,6 @@ case "${mode}" in
 	./setup_board --default --board=amd64-usr
 	./csphere_prepare_kernel.sh "${kernel_url}" "${firmware_url}"
 	./csphere_iamcos.sh
-	sudo mkdir -p mkdir /tmp/csphere-product-version/
 	./build_packages --csphere  \
 		--csphere_assets_path="${assets_url}" \
 		--csphere_mongod_path="${mongod_url}" \
