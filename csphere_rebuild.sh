@@ -59,6 +59,11 @@ esac
 	--board=amd64-usr \
 	--prod_image
 
-if [ -e /tmp/csphere_product_version.txt ]; then
-	sudo cp -af /tmp/csphere_product_version.txt ../build/images/amd64-usr/latest/
-fi
+sudo cp -af /tmp/csphere_product_version.txt ../build/images/amd64-usr/latest/
+
+dest=$(pwd)/../build/images/amd64-usr/latest/cos-update.tgz
+sudo mkdir /tmp/bin/
+sudo cp -a /tmp/{csphere,net-plugin,csphere-quota,docker} /tmp/bin
+sudo cp -a ./cos_update.bash /tmp/
+cd /tmp/
+sudo tar -czvf $dest bin/ units/ cos_update.bash csphere_product_version.txt
