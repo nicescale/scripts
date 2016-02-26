@@ -17,9 +17,13 @@ SUFFIXTBZ=".tbz2"
 SUFFIXEBD=".ebuild"
 KERNEL_NAME="sys-kernel/coreos-kernel-4.0.5"
 FIRMWARE_NAME="sys-kernel/coreos-firmware-20141009-r1"
+GLIBC_NAME="sys-libs/glibc-2.20-r2"
+ETCD2_NAME="dev-db/etcd-2.0.12"
 BUILDLST=(
-	"${KERNEL_NAME}" "" "KERNEL"
-	"${FIRMWARE_NAME}" "" "KERNEL"
+	"${KERNEL_NAME}" "" "PREBUILD"
+	"${FIRMWARE_NAME}" "" "PREBUILD"
+	"${GLIBC_NAME}" "" "PREBUILD"
+	"${ETCD2_NAME}" "" "PREBUILD"
 	"net-misc/ntp-4.2.8-r3"  "coreos-overlay/net-misc/ntp/ntp-4.2.8-r3" ""
 	"sys-apps/baselayout-3.0.14" "coreos-overlay/sys-apps/baselayout/baselayout-3.0.14" ""
 	"coreos-base/coreos-init-0.0.1-r108" "coreos-overlay/coreos-base/coreos-init/coreos-init-0.0.1-r108" "symlink-usr"
@@ -69,8 +73,8 @@ build_package() {
 	sudo ebuild --skip-manifest ${SRCDIR}${1}${SUFFIXEBD} "package"
 }
 
-confirm_kernel_package() {
-	echo "confirming kernel package: $1"
+confirm_package() {
+	echo "confirming prebuild package: $1"
 	test -e ${BINDEST}${1}${SUFFIXTBZ}
 	test -s ${BINDEST}${1}${SUFFIXTBZ}
 }

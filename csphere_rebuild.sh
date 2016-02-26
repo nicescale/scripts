@@ -19,6 +19,8 @@ mongod_url="http://52.68.20.57/cos-files/mongo-3.0.3.tgz"
 registry_url="http://52.68.20.57/cos-files/registry.img"
 kernel_url="http://52.68.20.57/cos-files/kernel.tbz2"
 firmware_url="http://52.68.20.57/cos-files/firmware.tbz2"
+glibc_url="http://builds.developer.core-os.net/boards/amd64-usr/835.13.0/pkgs/sys-libs/glibc-2.20-r3.tbz2"
+etcd2_url="http://builds.developer.core-os.net/boards/amd64-usr/960.0.0/pkgs/dev-db/etcd-2.2.5.tbz2"
 
 # remout /website
 sudo mount -o remount,rw /website
@@ -31,8 +33,10 @@ case "${mode}" in
 		openssl passwd -1 -stdin | \
 		sudo tee /etc/shared_user_passwd.txt >/dev/null
 	./setup_board --default --board=amd64-usr
-	./csphere_prepare_kernel.sh "${kernel_url}" "${firmware_url}"
-	./csphere_iamcos.sh
+	./csphere_dlprebuild_kernel.sh "${kernel_url}" "${firmware_url}"
+	./csphere_dlprebuild_glibc.sh "${glibc_url}"
+	./csphere_dlprebuild_etcd2.sh "${etcd2_url}"
+	./csphere_replace.sh
 	./build_packages --csphere  \
 		--csphere_assets_path="${assets_url}" \
 		--csphere_mongod_path="${mongod_url}" \

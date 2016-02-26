@@ -5,8 +5,8 @@ set -e
 
 BINDEST=$(get_bindest)
 for((i=0;i<=${#BUILDLST[*]}-1;i+=3));do
-	if [ "${BUILDLST[$(($i+2))]}" == "KERNEL" ]; then
-		confirm_kernel_package ${BUILDLST[$i]}
+	if [ "${BUILDLST[$(($i+2))]}" == "PREBUILD" ]; then
+		confirm_package ${BUILDLST[$i]}
 	else
 		build_package ${BUILDLST[$(($i+1))]} ${BUILDLST[$(($i+2))]}
 	fi
