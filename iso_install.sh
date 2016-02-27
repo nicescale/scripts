@@ -75,6 +75,13 @@ EOF
     - name: csphere-prepare.service
       command: start
       enable: true
+    - name: csphere-backup.service
+      enable: true
+    - name: csphere-backup.timer
+      command: start
+    - name: ntpd.service
+      command: start
+      enable: true
     - name: csphere-mongodb.service
       command: start
       enable: true
@@ -97,6 +104,9 @@ EOF
 	elif role_agent; then
 		cat <<EOF
     - name: csphere-prepare.service
+      command: start
+      enable: true
+    - name: systemd-timesyncd.service
       command: start
       enable: true
     - name: csphere-etcd2-agent.service
