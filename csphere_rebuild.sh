@@ -65,11 +65,35 @@ esac
 	--board=amd64-usr \
 	--prod_image
 
+# create tarball for binaries required by rpm package
+sudo mkdir /tmp/rpm-binaries/
+sudo cp -a \
+	/tmp/csphere-quota \
+	/tmp/csphere \
+	/tmp/registry.img \
+	/tmp/csphere-mongo/bin/{mongo,mongod,mongodump,mongoexport,mongoimport,mongorestore,mongostat} \
+	/tmp/cspherectl \
+	/tmp/net-plugin \
+	/tmp/prometheus \
+	/tmp/skydns \
+	/tmp/docker \
+	/tmp/rpm-binaries/
+curl -sS $etcd2_url -o /tmp/etcd-2.2.5.tbz2
+tar -xf /tmp/etcd-2.2.5.tbz2 -C /tmp
+mv /tmp/usr/bin/* /tmp/rpm-binaries/
+dest=$(pwd)/../build/images/amd64-usr/latest/rpm-binaries.tgz
+pushd /tmp
+sudo tar -czvf $dest rpm-binaries/
+popd
+
+# create csphere product info txt
 sudo cp -af /tmp/csphere_product_version.txt ../build/images/amd64-usr/latest/
 
+# create tarball for cos local update
 dest=$(pwd)/../build/images/amd64-usr/latest/cos-update.tgz
 sudo mkdir /tmp/bin/
 sudo cp -a /tmp/{csphere,net-plugin,csphere-quota,docker} /tmp/bin
 sudo cp -a ./cos_update.bash /tmp/
-cd /tmp/
+pushd /tmp/
 sudo tar -czvf $dest bin/ units/ cos_update.bash csphere_product_version.txt
+popd
