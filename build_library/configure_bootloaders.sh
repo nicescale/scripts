@@ -27,7 +27,8 @@ common_args="console=tty0 ro noswap cros_legacy"
 common_args="${common_args} ${FLAGS_boot_args}"
 
 # Filesystem command line args.
-root_args="root=LABEL=ROOT rootflags=subvol=root"
+# Refer: https://www.kernel.org/doc/Documentation/kernel-parameters.txt
+root_args="root=LABEL=ROOT rootflags=subvol=root,data=journal"
 slot_a_args="${root_args} usr=PARTLABEL=USR-A"
 slot_b_args="${root_args} usr=PARTLABEL=USR-B"
 

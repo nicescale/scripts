@@ -897,6 +897,21 @@ cloudinit() {
 		exit 1
 	fi
 	clean_mount /mnt1
+
+	# remount oem partition /usr/share/oem on /mnt2
+	mkdir -p /mnt2
+	mount -t ext4 ${DEVICE}6 /mnt2
+	cat > /mnt2/grub.cfg << EOF
+set linux_append="rootflags=data=journal"
+EOF
+	if [ ! -s /mnt2/grub.cfg ]; then
+		${DIALOG} --title "ERROR" \
+			--ok-label "Exit" \
+			--msgbox "ERROR: Setup Kernel Boot Options!" 5 41
+		clean_mount /mnt2
+		exit 1
+	fi
+	clean_mount /mnt2
 }
 
 bye() {
