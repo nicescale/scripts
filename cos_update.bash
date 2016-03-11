@@ -54,7 +54,7 @@ function updatectl() {
 
 function updateagent() {
 	systemctl stop ${agentcomps[*]} || true
-	cp -avf bin/{csphere,docker,net-plugin,csphere-quota} $newbin/
+	cp -avf bin/{csphere,docker,net-plugin,csphere-logger,csphere-quota} $newbin/
 	for x in ${agentcomps[*]}
 	do
 		cp -avf units/${x}.service /etc/systemd/system/

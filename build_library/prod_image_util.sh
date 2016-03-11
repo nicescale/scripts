@@ -53,6 +53,7 @@ create_prod_image() {
   emerge_to_image "${root_fs_dir}" "csphere/csphere"
   emerge_to_image "${root_fs_dir}" "csphere/skydns"
   emerge_to_image "${root_fs_dir}" "csphere/costest"
+  emerge_to_image "${root_fs_dir}" "csphere/csphere-logger"
   # emerge tools we need into image
   emerge_to_image "${root_fs_dir}" "net-misc/dhcp"
   emerge_to_image "${root_fs_dir}" "sys-libs/ncurses"

@@ -74,6 +74,7 @@ sudo cp -avf \
 	/tmp/csphere-mongo/bin/{mongo,mongod,mongodump,mongoexport,mongoimport,mongorestore,mongostat} \
 	/tmp/cspherectl \
 	/tmp/net-plugin \
+	/tmp/csphere-logger \
 	/tmp/prometheus \
 	/tmp/skydns \
 	/tmp/docker \
@@ -92,7 +93,7 @@ sudo cp -avf /tmp/csphere_product_version.txt ../build/images/amd64-usr/latest/
 # create tarball for cos local update
 dest=$(pwd)/../build/images/amd64-usr/latest/cos-update.tgz
 sudo mkdir -pv /tmp/bin/
-sudo cp -avf /tmp/{csphere,net-plugin,csphere-quota,docker} /tmp/bin
+sudo cp -avf /tmp/{csphere,net-plugin,csphere-logger,csphere-quota,docker} /tmp/bin
 sudo cp -avf ./cos_update.bash /tmp/
 pushd /tmp/
 sudo tar -czvf $dest bin/ units/ cos_update.bash csphere_product_version.txt
