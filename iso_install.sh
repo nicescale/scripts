@@ -817,7 +817,7 @@ prog_inst() {
 	if [ ! -e "${DEVICE}9" ]; then
 		${DIALOG} --title "ERROR" \
 			--ok-label "Exit" \
-			--msgbox "ERROR on Installing COS To Device ${CDROMDEV}" 5 45
+			--msgbox "ERROR on Installing COS To Device ${DEVICE}" 5 70
 		exit 1
 	fi
 }
