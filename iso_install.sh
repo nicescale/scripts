@@ -707,7 +707,7 @@ setup_inet() {
 				[ $rc -eq 1 ] && exit_confirm
 			done
 		else
-			NetMode="bridge"
+			NetMode="ipvlan"  # set as ipvlan for controller
 		fi
 
 		cfg=
