@@ -16,6 +16,7 @@ SUBFFIX=$(echo ${version:-master}|cut -d. -f1,2)
 assets_url="http://tsing:e0cab9e41247ec200b7eb6ec5cb159ec@ci.csphe.re/job/csphere-fe/lastSuccessfulBuild/artifact/dist/assets-${SUBFFIX}.tgz"
 
 mongod_url="http://52.68.20.57/cos-files/mongo-3.0.3.tgz"
+svn_url="http://52.68.20.57/cos-files/svn.tgz"
 registry_url="http://52.68.20.57/cos-files/registry.img"
 kernel_url="http://52.68.20.57/cos-files/kernel.tbz2"
 firmware_url="http://52.68.20.57/cos-files/firmware.tbz2"
@@ -42,6 +43,7 @@ case "${mode}" in
 	./build_packages --csphere  \
 		--csphere_assets_path="${assets_url}" \
 		--csphere_mongod_path="${mongod_url}" \
+		--csphere_svn_path="${svn_url}" \
 		--csphere_registry_path="${registry_url}"
 	./build_image prod
 	;;

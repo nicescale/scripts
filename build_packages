@@ -29,6 +29,8 @@ DEFINE_string csphere_assets_path "" \
   "Csphere latest assets.tgz path or url"
 DEFINE_string csphere_mongod_path "" \
   "Csphere 3.0.3 mongod path or url"
+DEFINE_string csphere_svn_path "" \
+  "Csphere SVN path or url"
 DEFINE_string csphere_registry_path "" \
   "Csphere latest registry image path or url"
 
@@ -46,7 +48,7 @@ If [packages] are specified, only build those specific packages (and any
 dependencies they might need).
 
 Csphere product build mode:
-  --csphere  --csphere_assets_path=<...>  --csphere_mongod_path=<...>  --csphere_registry_path=<...>
+  --csphere  --csphere_assets_path=<...>  --csphere_mongod_path=<...>  --csphere_registry_path=<...> --csphere_svn_path=<...>
 "
 show_help_if_requested "$@"
 
@@ -107,10 +109,14 @@ if [[ "${FLAGS_csphere}" -eq "${FLAGS_TRUE}" ]]; then
 		die "require csphere_mongod_path flag on csphere build mode"
 	[ -z "${FLAGS_csphere_registry_path}" ] && \
 		die "require csphere_registry_path flag on csphere build mode"
+	[ -z "${FLAGS_csphere_svn_path}" ] && \
+		die "require csphere_svn_path flag on csphere build mode"
 	save="${SCRIPT_ROOT}/../third_party/coreos-overlay/csphere/csphere/files/assets-latest.tgz"
 	prepare_csphere_file "${FLAGS_csphere_assets_path}" "${save}"
 	save="${SCRIPT_ROOT}/../third_party/coreos-overlay/csphere/csphere/files/csphere-mongo.tgz"
 	prepare_csphere_file "${FLAGS_csphere_mongod_path}" "${save}"
+	save="${SCRIPT_ROOT}/../third_party/coreos-overlay/csphere/csphere/files/svn.tgz"
+	prepare_csphere_file "${FLAGS_csphere_svn_path}" "${save}"
 	save="${SCRIPT_ROOT}/../third_party/coreos-overlay/csphere/csphere/files/registry.img"
 	prepare_csphere_file "${FLAGS_csphere_registry_path}" "${save}"
 
