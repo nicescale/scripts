@@ -100,6 +100,9 @@ EOF
     - name: csphere-agent.service
       command: start
       enable: true
+    - name: csphere-monitor.service
+      command: start
+      enable: true
 EOF
 	elif role_agent; then
 		cat <<EOF
