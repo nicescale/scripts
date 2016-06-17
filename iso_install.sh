@@ -86,8 +86,7 @@ EOF
       command: start
       enable: true
     - name: csphere-prometheus.service
-      command: start
-      enable: true
+      enable: false
     - name: csphere-etcd2-controller.service
       command: start
       enable: true
@@ -95,11 +94,9 @@ EOF
       command: start
       enable: true
     - name: csphere-controller.service
-      command: start
-      enable: true
+      enable: false
     - name: csphere-agent.service
-      command: start
-      enable: true
+      enable: false
 EOF
 	elif role_agent; then
 		cat <<EOF
