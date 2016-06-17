@@ -507,7 +507,7 @@ setup_contrcfg() {
 	# we generate AuthKey for controller
 	AuthKey="$(gen_authkey 2>&-)"
 
-	# setup ControllerPort
+	# setup ControllerPort/ClusterSize
 	local rc=
 	while :; do
 		exec 3>&1
@@ -538,6 +538,22 @@ setup_contrcfg() {
 		[ ${ClusterSize} -gt 9 ] && continue
 
 		break
+	done
+
+	# setup MongoRepl
+	local rc=
+	while [ -z "${MongoRepl}" ]; do
+		exec 3>&1
+		MongoRepl=$( ${DIALOG} --title "Using Controller HA" \
+			--cancel-label "Exit" \
+			--radiolist "Controller HA" 8 60 0 \
+			"YES" "Active Csphere Controller HA"   yes \
+			"NO"  "Disable Csphere Controller HA"  no \
+		2>&1 1>&3
+		)
+		rc=$?
+		exec 3>&-
+		[ $rc -eq 1 ] && exit_confirm
 	done
 
 	# this is for agent on the same cos
