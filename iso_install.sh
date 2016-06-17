@@ -29,6 +29,8 @@ HasVlan=0
 VlanID=-1
 NetMode=
 InetDev=
+# TODO
+MongoRepl=
 
 # etcd name = HostName-EtcdName
 EtcdName=$(mktemp -u XXXX)
@@ -148,6 +150,7 @@ write_files:
       COS_ETCD_NAME=${HostName}-${EtcdName}
       COS_NETMODE=${NetMode}
       COS_INETDEV=${InetDev}
+      COS_MONGOREPL=${MongoRepl}
 EOF
 }
 
@@ -551,8 +554,8 @@ setup_agentcfg() {
 		agentform=$( ${DIALOG} --title "Agent Settings" \
 				--cancel-label "Exit" \
 				--form "Parameter:" 10 60 0 \
-				"Controller : "    1 1 "" 1 14 32 0 \
-				"InstallCode: "    2 1 "" 2 14 32 0 \
+				"Controller : "    1 1 "" 1 14 100 0 \
+				"InstallCode: "    2 1 "" 2 14 100 0 \
 				2>&1 1>&3		
 			)
 		rc=$?
@@ -565,13 +568,13 @@ setup_agentcfg() {
 			sed -e 's#^[ \t]*https*://##g'
 		)
 		InstCode="${agentform[1]}"; [ -z "${InstCode}" ] && continue
-		if ! ( echo -e "${Controller}" | grep -E -q "^.+:[1-9]+[0-9]*$" ); then
-			${DIALOG} --title "Check Invalid" \
-				--ok-label "Return"  \
-				--msgbox "Controller is invalid\nController should be like: Address:Port" \
-				6 48
-			continue
-		fi
+#		if ! ( echo -e "${Controller}" | grep -E -q "^.+:[1-9]+[0-9]*$" ); then
+#			${DIALOG} --title "Check Invalid" \
+#				--ok-label "Return"  \
+#				--msgbox "Controller is invalid\nController should be like: Address:Port" \
+#				6 48
+#			continue
+#		fi
 		if ! ( echo -e "${InstCode}" | grep -E -q "^[0-9]{4,4}$" ); then
 			${DIALOG} --title "Check Invalid" \
 				--ok-label "Return"  \
