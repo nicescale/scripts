@@ -87,19 +87,35 @@ EOF
     - name: csphere-mongodb.service
       command: start
       enable: true
-    - name: csphere-prometheus.service
-      enable: false
     - name: csphere-etcd2-controller.service
       command: start
       enable: true
     - name: csphere-docker-controller.service
       command: start
       enable: true
+EOF
+		if [ "${MongoRepl}" == "YES" ]; then
+			cat <<EOF
+    - name: csphere-prometheus.service
+      enable: false
     - name: csphere-controller.service
       enable: false
     - name: csphere-agent.service
       enable: false
 EOF
+		else
+			cat <<EOF
+    - name: csphere-prometheus.service
+      command: start
+      enable: true
+    - name: csphere-controller.service
+      command: start
+      enable: true
+    - name: csphere-agent.service
+      command: start
+      enable: true
+EOF
+		fi
 	elif role_agent; then
 		cat <<EOF
     - name: csphere-prepare.service
