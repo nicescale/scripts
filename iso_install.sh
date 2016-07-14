@@ -167,6 +167,8 @@ write_files:
       COS_NETMODE=${NetMode}
       COS_INETDEV=${InetDev}
       COS_MONGOREPL=${MongoRepl}
+      COS_CUSTOM_DOCKERGW=
+      COS_CUSTOM_DOCKERDNS=
 EOF
 }
 
