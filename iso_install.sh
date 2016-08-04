@@ -555,16 +555,18 @@ setup_agentcfg() {
 		agentform=( ${agentform} )
 		Controller="${agentform[0]}"; [ -z "${Controller}" ] && continue
 		Controller=$( echo -e "${Controller}" | \
-			sed -e 's#^[ \t]*https*://##g'
+			sed -e 's#https*://##g'
 		)
 		InstCode="${agentform[1]}"; [ -z "${InstCode}" ] && continue
-#		if ! ( echo -e "${Controller}" | grep -E -q "^.+:[1-9]+[0-9]*$" ); then
-#			${DIALOG} --title "Check Invalid" \
-#				--ok-label "Return"  \
-#				--msgbox "Controller is invalid\nController should be like: Address:Port" \
-#				6 48
-#			continue
-#		fi
+		for ipaddr in `echo "$Controller" | tr  ',' ' '`; do
+			if ! ( echo -e "${ipaddr}" | grep -E -q "^.+:[1-9]+[0-9]*$" ); then
+				${DIALOG} --title "Check Invalid" \
+					--ok-label "Return"  \
+					--msgbox "Controller is invalid\nController should be like: Address:Port" \
+					6 48
+				continue 2
+			fi
+		done
 		if ! ( echo -e "${InstCode}" | grep -E -q "^[0-9]{4,4}$" ); then
 			${DIALOG} --title "Check Invalid" \
 				--ok-label "Return"  \
