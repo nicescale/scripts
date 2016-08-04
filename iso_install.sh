@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 BASEDIR="$(cd $(dirname $0); pwd)"
 DIALOGBIN="/usr/share/oem/bin/dialog"
@@ -25,8 +25,6 @@ InstCode=
 DiscoveryUrl=
 SvrPoolID=
 ClusterSize=3  # etcd cluster size
-HasVlan=0
-VlanID=-1
 NetMode=
 InetDev=
 # TODO
@@ -190,8 +188,7 @@ EOF
 ${tmp}
 EOF
 
-	if [ ${HasVlan} -eq 0  ]; then
-		cat << EOF
+	cat << EOF
 - name: br0-slave-${inet}.network
   content: |
     [Match]
@@ -200,34 +197,6 @@ EOF
     [Network]
     Bridge=br0
 EOF
-
-	elif [ ${HasVlan} -eq 1 ]; then
-		cat << EOF
-- name: vlan${VlanID}.netdev
-  content: |
-    [NetDev]
-    Name=vlan${VlanID}
-    Kind=vlan
-
-    [VLAN]
-    Id=${VlanID}
-- name: vlan${VlanID}.network
-  content: |
-    [Match]
-    Name=vlan${VlanID}
-
-    [Network]
-    Bridge=br0
-- name: ${inet}.network
-  content: |
-    [Match]
-    Name=${inet}
-
-    [Network]
-    DHCP=no
-    VLAN=vlan${VlanID}
-EOF
-	fi
 
 # ipvlan network
 elif [ "${NetMode}" == "ipvlan" ]; then
@@ -254,7 +223,6 @@ inetcfg_error=(
 	1  "IPAddr Malformation"
 	2  "Gateway Malformation"
 	3  "Dns Malformation"
-	4  "VlanId Malformation"
 	5  "Config Missing"
 )
 
@@ -272,11 +240,10 @@ parse_inetcfg() {
 	local s="${1}"
 	local ln=$(echo -e "${s}" | awk 'END{print NR}')
 	[ $ln -lt 3 ] && return 5
-	local ipaddr= gateway= dns= vlan=
+	local ipaddr= gateway= dns=
 	ipaddr=$(echo -e "${s}" | awk '{print;exit 0}')
 	gateway=$(echo -e "${s}" | awk '(NR==2){print;exit}')
 	dns=$(echo -e "${s}" | awk '(NR==3){print;exit}')
-	vlan=$(echo -e "${s}" | awk '(NR==4){print;exit}')
 	pnum=$(echo -e "${ipaddr}" | awk -F"/" '{print NF}')
 	if [ $pnum -ne 2 ]; then
 		return 1
@@ -288,13 +255,6 @@ parse_inetcfg() {
 	fi
 	isipaddr "${gateway}"  || return 2
 	isipaddr "${dns}" || return 3
-	if [ "${vlan}" != "" ]; then
-		if ! isvlanid "${vlan}" || ! isnumber "${vlan}"; then
-			return 4
-		fi
-		HasVlan=1
-		VlanID=${vlan}
-	fi
 	cat << EOF
 [Network]
 DHCP=no
@@ -315,10 +275,6 @@ isipaddr() {
 
 is_between() {
         echo $1 $2 $3 | awk '{if($1>=$2 && $1<=$3){exit 0;} else{exit 1;}}' 2>&- 
-}
-
-isvlanid() {
-	is_between "${1}" 0 4095
 }
 
 role_controller() {
@@ -754,7 +710,6 @@ setup_inet() {
 					"IP/Mask  :"     1 1 "${now[0]}"  1 12 32 0 \
 					"Gateway  :"     2 1 "${now[1]}"  2 12 32 0 \
 					"DnsMaster:"     3 1 "${now[2]}"  3 12 32 0 \
-					"VLANID   :"     4 1 ""           4 12 32 0 \
 					2>&1 1>&3
 				)
 			rc=$?
