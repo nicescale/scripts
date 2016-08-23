@@ -27,8 +27,8 @@ SvrPoolID=
 ClusterSize=3  # etcd cluster size
 NetMode=
 InetDev=
-# TODO
 MongoRepl=
+VirtualIP=
 
 # etcd name = HostName-EtcdName
 EtcdName=$(mktemp -u XXXX)
@@ -167,6 +167,7 @@ write_files:
       COS_MONGOREPL=${MongoRepl}
       COS_CUSTOM_DOCKERGW=
       COS_CUSTOM_DOCKERDNS=
+      CONTROLLER_FLOAT_IP=${VirtualIP}
 EOF
 }
 
@@ -533,6 +534,25 @@ setup_contrcfg() {
 	# this is for agent on the same cos
 	Controller="127.0.0.1:${ControllerPort}"
 	SvrPoolID="csphere-internal"
+
+	# setup VIP of controller
+	if [ "${MongoRepl}" == "YES" ]; then
+		local rc=
+		while :; do
+			exec 3>&1
+			VirtualIP=$( ${DIALOG} --title "Virtual IP Address" \
+				--cancel-label "Exit" \
+				--form "Parameter:" 10 60 0 \
+				"Virtual IP: "  1 1 "" 1 14 30 0 \
+			2>&1 1>&3
+			)
+			rc=$?
+			exec 3>&-
+			[ $rc -eq 1 ] && exit_confirm
+			isipaddr "${VirtualIP}" || continue
+			break
+	done
+	fi
 }
 
 # if agent, setup controller-url / authkey  / discoveryurl
