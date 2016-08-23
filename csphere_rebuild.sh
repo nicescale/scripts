@@ -15,7 +15,8 @@ fi
 SUBFFIX=$(echo ${version:-master}|cut -d. -f1,2)
 assets_url="http://tsing:e0cab9e41247ec200b7eb6ec5cb159ec@ci.csphe.re/job/csphere-fe/lastSuccessfulBuild/artifact/dist/assets-${SUBFFIX}.tgz"
 
-mongod_url="http://52.68.20.57/cos-files/mongo-3.0.3.tgz"
+# mongod_url="http://52.68.20.57/cos-files/mongo-3.0.3.tgz"
+mongod_url="http://52.68.20.57/cos-files/mongo-3.2.9.tgz"
 svn_url="http://52.68.20.57/cos-files/svn.tgz"
 registry_url="http://52.68.20.57/cos-files/registry.img"
 hostterm_url="http://52.68.20.57/cos-files/hostterm.img"
@@ -76,7 +77,7 @@ sudo cp -avf \
 	/tmp/csphere \
 	/tmp/registry.img \
 	/tmp/hostterm.img \
-	/tmp/csphere-mongo/bin/{mongo,mongod,mongodump,mongoexport,mongoimport,mongorestore,mongostat} \
+	/tmp/csphere-mongo/bin/{mongo,mongod,mongodump,mongoexport,mongoimport,mongorestore,mongostat,mongofiles} \
 	/tmp/cspherectl \
 	/tmp/net-plugin \
 	/tmp/csphere-logger \
