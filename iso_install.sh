@@ -99,7 +99,8 @@ EOF
     - name: csphere-controller.service
       enable: false
     - name: csphere-agent.service
-      enable: false
+      command: start
+      enable: true
 EOF
 		else
 			cat <<EOF
@@ -531,10 +532,6 @@ setup_contrcfg() {
 		[ $rc -eq 1 ] && exit_confirm
 	done
 
-	# this is for agent on the same cos
-	Controller="127.0.0.1:${ControllerPort}"
-	SvrPoolID="csphere-internal"
-
 	# setup VIP of controller
 	if [ "${MongoRepl}" == "YES" ]; then
 		local rc=
@@ -553,6 +550,14 @@ setup_contrcfg() {
 			break
 	done
 	fi
+
+	# this is for agent on the same cos
+	if [ -n "${VirtualIP}" ]; then
+		Controller="${VirtualIP}:${ControllerPort}"
+	else
+		Controller="127.0.0.1:${ControllerPort}"
+	fi
+	SvrPoolID="csphere-internal"
 }
 
 # if agent, setup controller-url / authkey  / discoveryurl
