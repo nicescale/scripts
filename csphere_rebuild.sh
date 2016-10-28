@@ -13,7 +13,12 @@ else
 fi
 
 SUBFFIX=$(echo ${version:-master}|cut -d. -f1,2)
-assets_url="http://tsing:e0cab9e41247ec200b7eb6ec5cb159ec@ci.csphe.re/job/csphere-fe/lastSuccessfulBuild/artifact/dist/assets-${SUBFFIX}.tgz"
+BUILD_NUM=
+# assets_url="http://tsing:e0cab9e41247ec200b7eb6ec5cb159ec@ci.csphe.re/job/csphere-fe/lastSuccessfulBuild/artifact/dist/assets-${SUBFFIX}.tgz"
+assets_url="https://mxudmmj530.execute-api.ap-northeast-1.amazonaws.com/csphere/versions/${SUBFFIX}/assets.tgz?token=11b9d7909c1ddfc51a6ddc1c81c94ec86c473029"
+if [ ! -z "${BUILD_NUM}" ]; then
+	assets_url="https://mxudmmj530.execute-api.ap-northeast-1.amazonaws.com/csphere/builds/${BUILD_NUM}/assets.tgz?token=11b9d7909c1ddfc51a6ddc1c81c94ec86c473029"
+fi
 
 # mongod_url="http://52.68.20.57/cos-files/mongo-3.0.3.tgz"
 mongod_url="http://52.68.20.57/cos-files/mongo-3.2.9.tgz"
