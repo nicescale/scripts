@@ -98,7 +98,7 @@ prepare_csphere_file() {
 		cp -a "${path}" "${save}"
 	else
 		info "Downloading ${path##*/} from ${path}"
-		curl -Ss ${path} > ${save} || die "download ${path##*/} failed!"
+		curl -Ss -L ${path} > ${save} || die "download ${path##*/} failed!"
 	fi
 	[ -f "${save}" -a -s "${save}" ] || die "${save} not prepared!"
 	info "${save##*/} prepared!"
