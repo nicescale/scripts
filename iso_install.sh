@@ -29,6 +29,7 @@ NetMode=
 InetDev=
 MongoRepl=
 VirtualIP=
+RegionID=
 
 # etcd name = HostName-EtcdName
 EtcdName=$(mktemp -u XXXX)
@@ -169,6 +170,7 @@ write_files:
       COS_CUSTOM_DOCKERGW=
       COS_CUSTOM_DOCKERDNS=
       CONTROLLER_FLOAT_IP=${VirtualIP}
+      COS_REGION_ID=${RegionID}
 EOF
 }
 
@@ -599,7 +601,29 @@ setup_agentcfg() {
 				6 48
 			continue
 		fi
-		DiscoveryUrl="http://${Controller%%:*}:2379/v2/keys/discovery/hellocsphere"
+		# query region id via inst code
+		info=$( curl -s -w "  %{http_code}" \
+			"http://${ControllerAddr}/api/temp_token/${InstCode}/region" 2>/dev/null
+		)
+		local code=$( echo "${info}" | awk '{print $NF}' )
+		RegionID=$( echo "${info}" | awk '{print $1}' )
+		if [ "${code}" != "200" ]; then
+			${DIALOG} --title "Check Invalid" \
+				--ok-label "Return"  \
+				--msgbox "Region not found according by InstCode" \
+				6 48
+			continue
+		fi
+		if [ ${#RegionID} != 24 ]; then
+			${DIALOG} --title "Check Invalid" \
+				--ok-label "Return"  \
+				--msgbox "RegionID ${RegionID} is invalid" \
+				6 48
+			continue
+		fi
+		# setup discovery svr url
+		DiscoveryUrl="http://${Controller}/api/region/${RegionID}/discovery"
+
 		break
 	done
 }
