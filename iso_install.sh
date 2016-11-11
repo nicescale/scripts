@@ -29,7 +29,7 @@ NetMode=
 InetDev=
 MongoRepl=
 VirtualIP=
-RegionID=
+ClusterID=
 
 # etcd name = HostName-EtcdName
 EtcdName=$(mktemp -u XXXX)
@@ -170,7 +170,7 @@ write_files:
       COS_CUSTOM_DOCKERGW=
       COS_CUSTOM_DOCKERDNS=
       CONTROLLER_FLOAT_IP=${VirtualIP}
-      COS_REGION_ID=${RegionID}
+      COS_Cluster_ID=${ClusterID}
 EOF
 }
 
@@ -601,28 +601,28 @@ setup_agentcfg() {
 				6 48
 			continue
 		fi
-		# query region id via inst code
+		# query cluster id via inst code
 		info=$( curl -s -w "  %{http_code}" \
-			"http://${ControllerAddr}/api/temp_token/${InstCode}/region" 2>/dev/null
+			"http://${ControllerAddr}/api/temp_token/${InstCode}/cluster" 2>/dev/null
 		)
 		local code=$( echo "${info}" | awk '{print $NF}' )
-		RegionID=$( echo "${info}" | awk '{print $1}' )
+		ClusterID=$( echo "${info}" | awk '{print $1}' )
 		if [ "${code}" != "200" ]; then
 			${DIALOG} --title "Check Invalid" \
 				--ok-label "Return"  \
-				--msgbox "Region not found according by InstCode" \
+				--msgbox "Cluster not found according by InstCode" \
 				6 48
 			continue
 		fi
-		if [ ${#RegionID} != 24 ]; then
+		if [ ${#ClusterID} != 24 ]; then
 			${DIALOG} --title "Check Invalid" \
 				--ok-label "Return"  \
-				--msgbox "RegionID ${RegionID} is invalid" \
+				--msgbox "ClusterID ${ClusterID} is invalid" \
 				6 48
 			continue
 		fi
 		# setup discovery svr url
-		DiscoveryUrl="http://${Controller}/api/region/${RegionID}/discovery"
+		DiscoveryUrl="http://${Controller}/api/cluster/${ClusterID}/discovery"
 
 		break
 	done
