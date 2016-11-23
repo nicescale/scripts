@@ -287,6 +287,16 @@ break_dep_loop sys-apps/util-linux udev,systemd sys-apps/systemd cryptsetup
 # systemd[cryptsetup] -> cryptsetup -> lvm2 -> virtual/udev -> systemd
 break_dep_loop sys-apps/systemd cryptsetup
 
+# force to use golang 1.5.4
+info "Merging golang 1.5.4"
+sudo -E "${EMERGE_CMD[@]}" "${EMERGE_FLAGS[@]}" dev-lang/go
+
+info "upgrade golang 1.4.2 -> 1.5.4r1"
+sudo mv -v /usr/bin/go /usr/bin/go-1.4.2
+sudo mv -v /usr/lib64/go /usr/lib64/go-1.4.2
+sudo cp -av /build/amd64-usr/usr/bin/go /usr/bin/go
+sudo cp -ar /build/amd64-usr/usr/lib64/go/ /usr/lib64/go
+
 info "Merging skydns"
 sudo -E "${EMERGE_CMD[@]}" "${EMERGE_FLAGS[@]}" csphere/skydns
 
