@@ -11,3 +11,5 @@ BINDEST=$(get_bindest)
 mkdir -p "${BINDEST}sys-libs"
 echo "downloading $glibc_url ..."
 curl -sS $glibc_url > ${BINDEST}${GLIBC_NAME}${SUFFIXTBZ}
+echo "sha1sum of $glibc_url"
+sha1sum "${BINDEST}${GLIBC_NAME}${SUFFIXTBZ}"

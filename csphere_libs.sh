@@ -64,6 +64,7 @@ seekcpvf() {
 updatecpvf() {
 	local ln=$1 fname=$2 fvalue=$3
 	sudo sed -i ''${ln}'c'"${fname}"': '"${fvalue}"'' ${BINPACKAGESF}
+	echo "updating ${BINPACKAGESF}, line:$ln, new:$fname: $fvalue"
 }
 
 build_package() {
@@ -79,11 +80,14 @@ confirm_package() {
 	echo "confirming prebuild package: $1"
 	test -e ${BINDEST}${1}${SUFFIXTBZ}
 	test -s ${BINDEST}${1}${SUFFIXTBZ}
+	sha1sum ${BINDEST}${1}${SUFFIXTBZ}
 }
 
 replace_package() {
 	echo "replacing package: $1"
+	echo "previous: $(sha1sum ${BINHOSTPATH}/${1}${SUFFIXTBZ})"
 	sudo mv -v ${BINDEST}${1}${SUFFIXTBZ} ${BINHOSTPATH}/${1}${SUFFIXTBZ}
+	echo "new package: $(sha1sum ${BINHOSTPATH}/${1}${SUFFIXTBZ})"
 }
 
 refresh_digest() {
