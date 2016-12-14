@@ -13,7 +13,7 @@ else
 fi
 
 SUBFFIX=$(echo ${version:-master}|cut -d. -f1,2)
-BUILD_NUM=
+BUILD_NUM=5094 # same to 1.5.2 & 1.5.3
 # assets_url="http://tsing:e0cab9e41247ec200b7eb6ec5cb159ec@ci.csphe.re/job/csphere-fe/lastSuccessfulBuild/artifact/dist/assets-${SUBFFIX}.tgz"
 assets_url="https://mxudmmj530.execute-api.ap-northeast-1.amazonaws.com/csphere/versions/${SUBFFIX}/assets.tgz?token=11b9d7909c1ddfc51a6ddc1c81c94ec86c473029"
 if [ ! -z "${BUILD_NUM}" ]; then
